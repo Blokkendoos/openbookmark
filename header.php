@@ -32,16 +32,17 @@ require_once (ABSOLUTE_PATH . "lib/login.php");
 		<?php echo (@$settings["theme"]!="") ? '<link rel="stylesheet" type="text/css" href="./style'.$settings["theme"].'.css" />' : ""; ?>		
 		<link rel="shortcut icon" href="favicon.ico"/>
 		<script type="text/javascript" src="./lib/lib.js"></script>
-		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js"></script>
-		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
-		<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/smoothness/jquery-ui.css" />
+		<!-- <link rel="stylesheet" type="text/css" href="./jquery/jquery_ui/css/smoothness/jquery-ui-1.9.2.custom.min.css" /> -->
+		<script type="text/javascript" src="./jquery/jquery-1.11.1.min.js"></script>
+		<script type="text/javascript" src="./jquery/jquery_ui/js/jquery-ui-1.9.2.min.js"></script>
+		<link rel="shortcut icon" href="favicon.ico"/>
 		</head>
 <body>
 
 <?php
 
 if (is_file (ABSOLUTE_PATH . "install.php")) {
-	//message ('Remove "install.php" before using OpenBookmark.');
+	message ('Remove "install.php" before using OpenBookmark.');
 }
 
 if ($display_login_form) {
