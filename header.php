@@ -40,9 +40,9 @@ require_once (ABSOLUTE_PATH . "lib/login.php");
 
 <?php
 
-//if (is_file (ABSOLUTE_PATH . "install.php")) {
+if (is_file (ABSOLUTE_PATH . "install.php")) {
 	//message ('Remove "install.php" before using OpenBookmark.');
-//}
+}
 
 if ($display_login_form) {
 	$auth->display_login_form ();
