@@ -27,7 +27,7 @@ if (isset ($_SESSION)) {
 
 			# now get the settings.
 			if ($mysql->query ($query)) {
-				$settings = mysql_fetch_assoc ($mysql->result);
+				$settings = mysqli_fetch_assoc ($mysql->result);
 			}
 			else {
 				message ($mysql->error);

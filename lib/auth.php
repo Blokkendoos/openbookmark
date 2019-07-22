@@ -53,7 +53,7 @@ class auth {
 			$query = sprintf("SELECT COUNT(*) FROM user WHERE md5(username)=md5('%s') AND password=md5('%s')",
 				$mysql->escape ($this->username),
 				$mysql->escape ($this->password));
-			if ($mysql->query ($query) && mysql_result ($mysql->result, 0) === "1") {
+			if ($mysql->query ($query) && mysqli_result ($mysql->result, 0) === "1") {
 				if (isset ($_POST['remember'])) {
 					global $cookie;
 					$cookie['data'] = serialize (array ($this->username, md5 ($cookie['seed'] . md5 ($this->password))));
@@ -97,7 +97,7 @@ class auth {
 				$mysql->escape ($cookie['username']),
 				$mysql->escape ($cookie['seed']),
 				$mysql->escape ($cookie['password_hash']));
-			if ($mysql->query ($query) && mysql_result ($mysql->result, 0) === "1") {
+			if ($mysql->query ($query) && mysqli_result ($mysql->result, 0) === "1") {
 				$this->set_login_data ($cookie['username']);
 				return true;
 			}
