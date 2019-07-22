@@ -46,8 +46,8 @@ function list_bookmarks ($bookmarks, $show_checkbox, $show_folder, $show_icon, $
 			$img_d = '<img src="./images/descending.gif" alt="">';
 		}
 		else {
-			$sort_d = 'dateasc';
-			$img_d = '<img src="./images/descending.gif" alt="" class="invisible">';
+			$sort_d = 'datedesc';
+			$img_d = '<img src="./images/ascending.gif" alt="" class="invisible">';
 		}
 
 		echo '<div class="bookmarkcaption">' . "\n";
