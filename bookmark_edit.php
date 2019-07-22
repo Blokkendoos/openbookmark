@@ -29,7 +29,7 @@ if (count ($bmlist) > 1) {
 
 			<?php
 			$bookmarks = array ();
-			while ($row = mysql_fetch_assoc ($mysql->result)) {
+			while ($row = mysqli_fetch_assoc ($mysql->result)) {
 				array_push ($bookmarks, $row);
 			}
 			list_bookmarks ($bookmarks,
@@ -96,11 +96,11 @@ else if ($post_title == "" || $post_url == "" || $post_icon) {
 				$mysql->escape ($bmlist[0]),
 				$mysql->escape ($username));
 	if ($mysql->query ($query)) {
-		if (mysql_num_rows ($mysql->result) != 1) {
+		if (mysqli_num_rows ($mysql->result) != 1) {
 			message ("No Bookmark to edit");
 		}
 		else {
-			$row = mysql_fetch_object ($mysql->result);
+			$row = mysqli_fetch_object ($mysql->result);
 			require_once (ABSOLUTE_PATH . "folders.php");
 			$tree = new folder;
 			$query_string = "?expand=" . implode(",", $tree->get_path_to_root ($row->childof)) . "&amp;folderid=" . $row->childof;

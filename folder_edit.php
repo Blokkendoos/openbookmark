@@ -15,8 +15,8 @@ else if ($foldername == "") {
 		$mysql->escape ($username));
 
 	if ($mysql->query ($query)) {
-		if (mysql_num_rows ($mysql->result) == 1) {
-			$row = mysql_fetch_object ($mysql->result);
+		if (mysqli_num_rows ($mysql->result) == 1) {
+			$row = mysqli_fetch_object ($mysql->result);
 		}
 		else {
 			message ("No Folder to edit.");

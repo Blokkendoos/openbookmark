@@ -87,10 +87,10 @@ else {
 		$mysql->escape ($username));
 
 	if ($mysql->query ($query)) {
-		if (mysql_num_rows ($mysql->result) == 0){
+		if (mysqli_num_rows ($mysql->result) == 0){
 			message ("Folder does not exist");
 		}
-		$row = mysql_fetch_object ($mysql->result);
+		$row = mysqli_fetch_object ($mysql->result);
 		?>
 
 		<h2 class="title">Delete this Folder?</h2>

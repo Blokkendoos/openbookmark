@@ -247,7 +247,7 @@ class import {
 				$this->name_bookmark = input_validation (preg_replace ("/^( *<DT><[^>]*>)([^<]*)(.*)/", "\\2", $line), $this->charset);
 				$this->url = input_validation (preg_replace ("/([^H]*HREF=\")([^\"]*)(\".*)/", "\\2", $line), $this->charset);
 				$this->bookmark_new ();
-				$insert_id = mysql_insert_id ();
+				$insert_id = mysqli_insert_id ($this->mysql->dbh);
 			}
 			# this is a description. it is only being saved
 			# if a bookmark has been saved previously
@@ -282,7 +282,7 @@ class import {
 			$this->mysql->escape ($this->public));
 
 		if ($this->mysql->query ($query)) {
-			$this->current_folder = mysql_insert_id ();
+			$this->current_folder = mysqli_insert_id ($this->mysql->dbh);
 			array_push ($this->folder_depth, $this->current_folder);
 			unset ($this->name_folder);
 			$this->count_folders++;

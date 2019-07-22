@@ -174,7 +174,7 @@ $message2 = '';
 							$query = "SELECT username, admin FROM user ORDER BY username";
 			
 							if ($mysql->query ($query)) {
-								while ($row = mysql_fetch_object ($mysql->result)) {
+								while ($row = mysqli_fetch_object ($mysql->result)) {
 									echo '<input type="radio" name="existing_user" value="'.$row->username.'">';
 									if ($row->admin) {
 										echo " <b>" . $row->username . "</b><br>\n";
