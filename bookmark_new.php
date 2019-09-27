@@ -16,6 +16,8 @@ require_once (ABSOLUTE_PATH . "folders.php");
 $tree = new folder;
 $query_string = "?expand=" . implode(",", $tree->get_path_to_root ($post_childof)) . "&amp;folderid=" . $post_childof;
 
+global $dbh;
+
 if ($post_title == '' || $post_url == '') {
 	$path = $tree->print_path ($folderid);
 	if ($post_title != '') {
@@ -79,7 +81,7 @@ else {
 
 	if ($mysql->query ($query)) {
 		echo "Bookmark successfully created<br>\n";
-		$bm_id = mysqli_insert_id ($mysql->dbh);
+		$bm_id = mysqli_insert_id ($dbh);
 	}
 	else {
 		message ($mysql->error);
