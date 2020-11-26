@@ -48,7 +48,9 @@ class favicon {
 		}
 
 		if ($this->favicon_url) {
-			$this->icon_name = rand() . "_" . hash("sha1", basename($this->favicon_url));
+			$file_name = basename($this->favicon_url);
+			$file_ext = substr(strrchr($file_name,'.'), 1);
+			$this->icon_name = rand() . "_" . hash("sha1", $file_name) . ".$file_ext";
 			$retval = $this->get_favicon_image();
 		}
 
