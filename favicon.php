@@ -5,19 +5,9 @@ if (basename($_SERVER['SCRIPT_NAME']) == basename (__FILE__)) {
 
 /*
 
-PHP Grab Favicon
+PHP Grab favicon
 
-How it Works
-------------
-1. Check if the favicon already exists local or no save is wished, if so return path & filename
-2. Else load URL and try to match the favicon location with regex
-3. If we have a match the favicon link will be made absolute
-4. If we have no favicon we try to get one in domain root
-5. If there is still no favicon we randomly try google, faviconkit & favicongrabber API
-6. If favicon should be saved try to load the favicon URL
-7. If wished save the Favicon for the next time and return the path & filename
-
-### on favicon: https://github.com/audreyr/favicon-cheat-sheet
+### favicon info: https://github.com/audreyr/favicon-cheat-sheet
 ### source: https://github.com/gaffling/PHP-Grab-Favicon/blob/master/get-fav.php
 ### Copyright 2019-2020 Igor Gaffling
 
@@ -66,8 +56,7 @@ class favicon {
 		$url = strtolower($url);
 		$domain = $this->check_domain(parse_url($url, PHP_URL_HOST));
 
-		// If $trySelf == TRUE ONLY USE APIs
-		if (isset($trySelf) and $trySelf == TRUE) {	 
+		if ($trySelf) {	 
 
 			// Load Page
 			$html = $this->load($url);
@@ -169,7 +158,6 @@ class favicon {
 		}
 	}
 
-	/* load page */
 	function load($url) {
 		// use curl or file_get_contents (both with user_agent) and fopen/fread as fallback
 		if (function_exists('curl_version')) {
@@ -227,10 +215,6 @@ class favicon {
 		return $scheme . '://' . $abs;
 	}
 
-
-// ORIGINAL favicon() methods
-
-
 	/*
 	check the image type and convert & resize it if required
 	returns the absolute path of the (converted) .png file 
@@ -241,9 +225,9 @@ class favicon {
 
 		$tmp_file = "./favicons/" . $this->icon_name;
 		# find out file type
-		if (@exec ("$identify $tmp_file", $output)) {
-			$ident = explode (" ", $output[0]);
-			if (count ($output) > 1) {
+		if (@exec("$identify $tmp_file", $output)) {
+			$ident = explode(" ", $output[0]);
+			if (count($output) > 1) {
 				$file_to_convert = $ident[0];
 			}
 			else {
@@ -251,8 +235,8 @@ class favicon {
 			}
 
 			# convert image in any case to 16x16 and .png
-			system ("$convert $file_to_convert -resize 16x16 $tmp_file.png");
-			@unlink ($tmp_file);
+			system("$convert $file_to_convert -resize 16x16 $tmp_file.png");
+			@unlink($tmp_file);
 			return $tmp_file . ".png";
 		}
 		else {
