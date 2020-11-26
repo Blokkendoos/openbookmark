@@ -13,114 +13,116 @@ PHP Grab favicon
 
 */ 
 
+
 class favicon {
 
 	function favicon($url) {
 
+		$this->debug = true;
+
 		global $settings, $convert_favicons;
 
 		if ($settings['show_bookmark_icon']) {
-
-			$parms = array(
-					'URL' => $url,  // URL of the Page we like to get the Favicon from
-					'TRY' => true,  // Try to get the Favicon frome the page (true) or only use the APIs (false)
-					);
-			$this->favicon_url = $this->get_favicon_url($parms);
-
-			if ($this->favicon_url) {
-
-				$this->icon_name = rand() . basename($this->favicon_url);
-
-				if ($this->get_favicon_image()) {
-
-					if ($convert_favicons) {
-						$this->favicon = $this->convert_favicon();
-					}
-					else {
-						$this->favicon = "./favicons/" . $this->icon_name;
-					}
+			if ($this->get_favicon($url)) {
+				if ($convert_favicons) {
+					$this->favicon = $this->convert_favicon();
+				}
+				else {
+					$this->favicon = "./favicons/" . $this->icon_name;
 				}
 			}
 		}
 	}
 
-	function get_favicon_url($options=array()) {
-
+	function get_favicon($url) {
+		$retval = false;
+		
 		// avoid script runtime timeout
 		$max_execution_time = ini_get("max_execution_time");
 		set_time_limit(0); // 0 = no timelimit
 
-		$url = (isset($options['URL']))?$options['URL']:'chaosgeordend.nl';
-		$trySelf = (isset($options['TRY']))?$options['TRY']:true;
-
 		$url = strtolower($url);
 		$domain = $this->check_domain(parse_url($url, PHP_URL_HOST));
 
-		if ($trySelf) {	 
-
-			// Load Page
-			$html = $this->load($url);
-
-			// Find Favicon with RegEx
-			$regExPattern = '/((<link[^>]+rel=.(icon|shortcut icon|alternate icon)[^>]+>))/i';
-			if (@preg_match($regExPattern, $html, $matchTag)) {
-				$regExPattern = '/href=(\'|\")(.*?)\1/i';
-				if (isset($matchTag[1]) and @preg_match($regExPattern, $matchTag[1], $matchUrl)) {
-					if (isset($matchUrl[2])) {
-						// Build Favicon Link
-						$favicon = $this->rel2abs(trim($matchUrl[2]), 'http://'.$domain.'/');
-					}
-				}
-			}
-
-			// If there is no Match: Try if there is a Favicon in the Root of the Domain
-			if (empty($favicon)) { 
-				$favicon = 'http://'.$domain.'/favicon.ico';
-
-				// Try to Load Favicon
-				if (!@getimagesize($favicon)) {
-					unset($favicon);
-				}
-			}
+		$this->get_favicon_url($url, $domain);
+		if (empty($this->favicon_url)) {
+			$this->get_favicon_api($url, $domain);
 		}
 
-		// If nothink works: Get the Favicon from API
-		if (!isset($favicon) or empty($favicon)) {
-
-			// Select API by Random
-			$random = rand(1,3);
-
-			// Faviconkit API
-			if ($random == 1 or empty($favicon)) {
-				$favicon = 'https://api.faviconkit.com/'.$domain.'/16';
-			}
-
-			// Favicongrabber API
-			if ($random == 2 or empty($favicon)) {
-				$echo = json_decode(load('http://favicongrabber.com/api/grab/'.$domain,FALSE),TRUE);
-
-				// Get Favicon URL from Array out of json data (@ if something went wrong)
-				$favicon = @$echo['icons']['0']['src'];
-
-			}
-
-			// Google API (check also md5() later)
-			if ($random == 3) {
-				$favicon = 'http://www.google.com/s2/favicons?domain='.$domain;
-			} 
+		if ($this->favicon_url) {
+			if ($this->debug) error_log("we have an URL, get image from:".$this->favicon_url);
+			$this->icon_name = rand() . basename($this->favicon_url);
+			$retval = $this->get_favicon_image();
 		}
 
 		// restore script runtime timeout
 		set_time_limit($max_execution_time);
+		
+		return $retval;
+	}
 
-		// Return Favicon Url
-		return $favicon;
+	/*
+	Try to load the favicon from the given URL
+	*/
+	function get_favicon_url($url, $domain) {
+		$html = $this->load($url);
+		// Find Favicon with RegEx
+		$regExPattern = '/((<link[^>]+rel=.(icon|shortcut icon|alternate icon)[^>]+>))/i';
+		if (@preg_match($regExPattern, $html, $matchTag)) {
+			$regExPattern = '/href=(\'|\")(.*?)\1/i';
+			if (isset($matchTag[1]) and @preg_match($regExPattern, $matchTag[1], $matchUrl)) {
+				if (isset($matchUrl[2])) {
+					// Build Favicon Link
+					$favicon = $this->rel2abs(trim($matchUrl[2]), 'http://'.$domain.'/');
+				}
+			}
+		}
+
+		// If there is no Match: Try if there is a Favicon in the Root of the Domain
+		if (empty($favicon)) { 
+			$favicon = 'http://'.$domain.'/favicon.ico';
+			// Try to Load Favicon
+			if (!@getimagesize($favicon)) {
+				$favicon = NULL;
+			}
+		}
+
+		$this->favicon_url = $favicon;
+	}
+
+	/*
+	Try to load the favicon using a public API
+	*/
+	function get_favicon_api($url, $domain) {
+		// Select API by Random
+		$random = 2;
+		$random = rand(1,3);
+
+		// Faviconkit
+		if ($random == 1 or empty($favicon)) {
+			$favicon = 'https://api.faviconkit.com/'.$domain.'/16';
+			if ($this->debug) error_log("FaviconKit, url:" . $favicon);
+		}
+
+		// Favicongrabber
+		if ($random == 2 or empty($favicon)) {
+			$echo = json_decode($this->load('http://favicongrabber.com/api/grab/'.$domain), TRUE);
+			// Get Favicon URL from Array out of json data (@ if something went wrong)
+			$favicon = @$echo['icons']['0']['src'];
+			if ($this->debug) error_log("FaviconGrabber, url:" . $favicon);
+		}
+
+		// Google (check also md5() later)
+		if ($random == 3) {
+			$favicon = 'http://www.google.com/s2/favicons?domain='.$domain;
+			if ($this->debug) error_log("Google, url:" . $favicon);
+		} 
+
+		$this->favicon_url = $favicon;
 	}
 
 	function check_domain($domain) {
-
 		$domainParts = explode('.', $domain);
-
 		if (count($domainParts) == 3 and $domainParts[0] != 'www') {
 			// with Subdomain (if not www)
 			$domain = $domainParts[0].'.'.
@@ -128,16 +130,14 @@ class favicon {
 					$domainParts[count($domainParts)-1];
 
 		} else if (count($domainParts) >= 2) {
-			// without Subdomain
+			// without subdomain
 			$domain = $domainParts[count($domainParts)-2].'.'.$domainParts[count($domainParts)-1];
 
 		} else {
 			// without http(s)
 			$domain = $url;
 		}
-
 		return $domain;
-
 	}
 
 	/*
@@ -147,13 +147,15 @@ class favicon {
 	function get_favicon_image() {
 
 		$image = $this->load($this->favicon_url);
-	
+
 		if ($fp = @fopen("./favicons/" . $this->icon_name, "w")) {
 			fwrite($fp, $image);
 			fclose($fp);
+			if ($this->debug) error_log("Favicon written, filename: ".$this->icon_name);
 			return true;
 		}
 		else {
+			if ($this->debug) error_log("Favicon NOT WRITTEN, filename: ".$this->icon_name);
 			return false;
 		}
 	}
@@ -190,15 +192,12 @@ class favicon {
 				}
 				fclose($fh);
 			}
-
 		}
-
 		return $content;
 	}
 
 	/* make absolute URL from relative */
 	function rel2abs($rel, $base) {
-
 		extract(parse_url( $base ));
 
 		if (strpos($rel,"//") === 0) return $scheme . ':' . $rel;
@@ -220,10 +219,10 @@ class favicon {
 	returns the absolute path of the (converted) .png file 
 	*/
 	function convert_favicon() {
-
 		global $convert, $identify;
 
 		$tmp_file = "./favicons/" . $this->icon_name;
+
 		# find out file type
 		if (@exec("$identify $tmp_file", $output)) {
 			$ident = explode(" ", $output[0]);
@@ -237,14 +236,19 @@ class favicon {
 			# convert image in any case to 16x16 and .png
 			system("$convert $file_to_convert -resize 16x16 $tmp_file.png");
 			@unlink($tmp_file);
+
+			if ($this->debug) error_log("CONVERTED, image: " . $tmp_file);
+
 			return $tmp_file . ".png";
 		}
 		else {
+
+			if ($this->debug) error_log("NOT Converted");
+
 			@unlink ($tmp_file);
 			return false;
 		}
 	}
-
 }
 
 ?>
