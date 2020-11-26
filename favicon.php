@@ -18,8 +18,6 @@ class favicon {
 
 	function favicon($url) {
 
-		$this->debug = true;
-
 		global $settings, $convert_favicons;
 
 		if ($settings['show_bookmark_icon']) {
@@ -50,8 +48,9 @@ class favicon {
 		}
 
 		if ($this->favicon_url) {
-			if ($this->debug) error_log("we have an URL, get image from:".$this->favicon_url);
-			$this->icon_name = rand() . "_" . hash("sha1", basename($this->favicon_url));
+			$file_name = basename($this->favicon_url);
+			$file_ext = substr(strrchr($file_name,'.'), 1);
+			$this->icon_name = rand() . "_" . hash("sha1", basename($this->favicon_url)) . "." . $file_ext;
 			$retval = $this->get_favicon_image();
 		}
 
@@ -101,7 +100,6 @@ class favicon {
 		// Faviconkit
 		if ($random == 1 or empty($favicon)) {
 			$favicon = 'https://api.faviconkit.com/'.$domain.'/16';
-			if ($this->debug) error_log("FaviconKit, url:" . $favicon);
 		}
 
 		// Favicongrabber
@@ -109,13 +107,11 @@ class favicon {
 			$echo = json_decode($this->load('http://favicongrabber.com/api/grab/'.$domain), TRUE);
 			// Get Favicon URL from Array out of json data (@ if something went wrong)
 			$favicon = @$echo['icons']['0']['src'];
-			if ($this->debug) error_log("FaviconGrabber, url:" . $favicon);
 		}
 
 		// Google (check also md5() later)
 		if ($random == 3) {
 			$favicon = 'http://www.google.com/s2/favicons?domain='.$domain;
-			if ($this->debug) error_log("Google, url:" . $favicon);
 		} 
 
 		$this->favicon_url = $favicon;
@@ -151,22 +147,24 @@ class favicon {
 		if ($fp = @fopen("./favicons/" . $this->icon_name, "w")) {
 			fwrite($fp, $image);
 			fclose($fp);
-			if ($this->debug) error_log("Favicon written, filename: ".$this->icon_name);
 			return true;
 		}
 		else {
-			if ($this->debug) error_log("Favicon NOT WRITTEN, filename: ".$this->icon_name);
 			return false;
 		}
 	}
 
 	function load($url) {
+
+		// use an agent that is likely to be accepted by the host
+		$user_agent = "Mozilla/5.0 (Windows NT 5.1; rv:31.0) Gecko/20100101 Firefox/31.0";
+		
 		// use curl or file_get_contents (both with user_agent) and fopen/fread as fallback
 		if (function_exists('curl_version')) {
 
 			$ch = curl_init($url);
 
-			curl_setopt($ch, CURLOPT_USERAGENT, 'FaviconBot/1.0 (+http://'.$_SERVER['SERVER_NAME'].'/');
+			curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -177,7 +175,7 @@ class favicon {
 
 		} else {
 
-			$context = array('http' => array('user_agent' => 'FaviconBot/1.0 (+http://'.$_SERVER['SERVER_NAME'].'/)'),);
+			$context = array('http' => array('user_agent' => $user_agent,));
 			$context = stream_context_create($context);
 
 			if (function_exists('file_get_contents')) {
@@ -224,7 +222,7 @@ class favicon {
 		$tmp_file = "./favicons/" . $this->icon_name;
 
 		# find out file type
-		if (@exec("$identify $tmp_file", $output)) {
+		if (@exec("$identify '" . $tmp_file . "'", $output)) {
 			$ident = explode(" ", $output[0]);
 			if (count($output) > 1) {
 				$file_to_convert = $ident[0];
@@ -232,19 +230,12 @@ class favicon {
 			else {
 				$file_to_convert = $tmp_file;
 			}
-
 			# convert image in any case to 16x16 and .png
 			system("$convert $file_to_convert -resize 16x16 $tmp_file.png");
 			@unlink($tmp_file);
-
-			if ($this->debug) error_log("CONVERTED, image: " . $tmp_file);
-
 			return $tmp_file . ".png";
 		}
 		else {
-
-			if ($this->debug) error_log("NOT Converted");
-
 			@unlink ($tmp_file);
 			return false;
 		}
