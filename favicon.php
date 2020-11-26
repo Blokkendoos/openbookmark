@@ -1,32 +1,257 @@
 <?php
-if (basename ($_SERVER['SCRIPT_NAME']) == basename (__FILE__)) {
+if (basename($_SERVER['SCRIPT_NAME']) == basename (__FILE__)) {
 	die ("no direct access allowed");
 }
 
+/*
+
+PHP Grab Favicon
+
+How it Works
+------------
+1. Check if the favicon already exists local or no save is wished, if so return path & filename
+2. Else load URL and try to match the favicon location with regex
+3. If we have a match the favicon link will be made absolute
+4. If we have no favicon we try to get one in domain root
+5. If there is still no favicon we randomly try google, faviconkit & favicongrabber API
+6. If favicon should be saved try to load the favicon URL
+7. If wished save the Favicon for the next time and return the path & filename
+
+### on favicon: https://github.com/audreyr/favicon-cheat-sheet
+### source: https://github.com/gaffling/PHP-Grab-Favicon/blob/master/get-fav.php
+### Copyright 2019-2020 Igor Gaffling
+
+*/ 
+
 class favicon {
-	function favicon ($url) {
+
+	function favicon($url) {
+
 		global $settings, $convert_favicons;
+
 		if ($settings['show_bookmark_icon']) {
-			if ($this->parsed_url = $this->return_parse_url ($url)) {
-				if ($this->favicon_url = $this->get_favicon_url ()) {
-					$this->icon_name = rand () . basename ($this->favicon_url);
-					if ($this->get_favicon_image ()) {
-						if ($convert_favicons) {
-							$this->favicon = $this->convert_favicon ();
-						}
-						else {
-							$this->favicon = "./favicons/" . $this->icon_name;
-						}
+
+			$parms = array(
+					'URL' => $url,  // URL of the Page we like to get the Favicon from
+					'TRY' => true,  // Try to get the Favicon frome the page (true) or only use the APIs (false)
+					);
+			$this->favicon_url = $this->get_favicon_url($parms);
+
+			if ($this->favicon_url) {
+
+				$this->icon_name = rand() . basename($this->favicon_url);
+
+				if ($this->get_favicon_image()) {
+
+					if ($convert_favicons) {
+						$this->favicon = $this->convert_favicon();
+					}
+					else {
+						$this->favicon = "./favicons/" . $this->icon_name;
 					}
 				}
 			}
 		}
 	}
-	###
-	### check the image type and convert & resize it if required
-	### returns the absolute path of the (converted) .png file
-	###
-	function convert_favicon () {
+
+	function get_favicon_url($options=array()) {
+
+		// avoid script runtime timeout
+		$max_execution_time = ini_get("max_execution_time");
+		set_time_limit(0); // 0 = no timelimit
+
+		$url = (isset($options['URL']))?$options['URL']:'chaosgeordend.nl';
+		$trySelf = (isset($options['TRY']))?$options['TRY']:true;
+
+		$url = strtolower($url);
+		$domain = parse_url($url, PHP_URL_HOST);
+
+		$domain = $this->check_domain($domain);
+
+		// Make Path & Filename
+		$filePath = preg_replace('#\/\/#', '/', $directory.'/'.$domain.'.png');
+		// change save path & filename of icons ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+
+		// If Favicon not already exists local
+		if (!file_exists($filePath) or @filesize($filePath) == 0) {
+
+			// If $trySelf == TRUE ONLY USE APIs
+			if (isset($trySelf) and $trySelf == TRUE) {	 
+
+				// Load Page
+				$html = $this->load($url);
+
+				// Find Favicon with RegEx
+				$regExPattern = '/((<link[^>]+rel=.(icon|shortcut icon|alternate icon)[^>]+>))/i';
+				if (@preg_match($regExPattern, $html, $matchTag)) {
+					$regExPattern = '/href=(\'|\")(.*?)\1/i';
+					if (isset($matchTag[1]) and @preg_match($regExPattern, $matchTag[1], $matchUrl)) {
+						if (isset($matchUrl[2])) {
+							// Build Favicon Link
+							$favicon = $this->rel2abs(trim($matchUrl[2]), 'http://'.$domain.'/');
+						}
+					}
+				}
+
+				// If there is no Match: Try if there is a Favicon in the Root of the Domain
+				if (empty($favicon)) { 
+					$favicon = 'http://'.$domain.'/favicon.ico';
+
+					// Try to Load Favicon
+					if (!@getimagesize($favicon)) {
+						unset($favicon);
+					}
+				}
+
+			} // END If $trySelf == TRUE ONLY USE APIs
+
+			// If nothink works: Get the Favicon from API
+			if (!isset($favicon) or empty($favicon)) {
+
+				// Select API by Random
+				$random = rand(1,3);
+
+				// Faviconkit API
+				if ($random == 1 or empty($favicon)) {
+					$favicon = 'https://api.faviconkit.com/'.$domain.'/16';
+				}
+
+				// Favicongrabber API
+				if ($random == 2 or empty($favicon)) {
+					$echo = json_decode(load('http://favicongrabber.com/api/grab/'.$domain,FALSE),TRUE);
+
+					// Get Favicon URL from Array out of json data (@ if something went wrong)
+					$favicon = @$echo['icons']['0']['src'];
+
+				}
+
+				// Google API (check also md5() later)
+				if ($random == 3) {
+					$favicon = 'http://www.google.com/s2/favicons?domain='.$domain;
+				} 
+
+			} // END If nothink works: Get the Favicon from API
+
+			$filePath = $favicon;
+
+		} // END If Favicon not already exists local
+
+		// reset script runtime timeout
+		set_time_limit($max_execution_time); // set it back to the old value
+
+		// Return Favicon Url
+		return $filePath;
+
+	}
+
+	function check_domain($domain) {
+
+		$domainParts = explode('.', $domain);
+
+		if (count($domainParts) == 3 and $domainParts[0] != 'www') {
+			// with Subdomain (if not www)
+			$domain = $domainParts[0].'.'.
+					$domainParts[count($domainParts)-2].'.'.
+					$domainParts[count($domainParts)-1];
+
+		} else if (count($domainParts) >= 2) {
+			// without Subdomain
+			$domain = $domainParts[count($domainParts)-2].'.'.$domainParts[count($domainParts)-1];
+
+		} else {
+			// without http(s)
+			$domain = $url;
+		}
+
+		return $domain;
+
+	}
+
+	/*
+	get and save the favicon image,
+	returns true when successful, otherwise false
+	*/
+	function get_favicon_image() {
+
+		$image = $this->load($this->favicon_url);
+	
+		if ($fp = @fopen("./favicons/" . $this->icon_name, "w")) {
+			fwrite($fp, $image);
+			fclose($fp);
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	/* load page */
+	function load($url) {
+		// use curl or file_get_contents (both with user_agent) and fopen/fread as fallback
+		if (function_exists('curl_version')) {
+
+			$ch = curl_init($url);
+
+			curl_setopt($ch, CURLOPT_USERAGENT, 'FaviconBot/1.0 (+http://'.$_SERVER['SERVER_NAME'].'/');
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+			$content = curl_exec($ch);
+			curl_close($ch);
+
+			unset($ch);
+
+		} else {
+
+			$context = array('http' => array('user_agent' => 'FaviconBot/1.0 (+http://'.$_SERVER['SERVER_NAME'].'/)'),);
+			$context = stream_context_create($context);
+
+			if (function_exists('file_get_contents')) {
+
+				$content = file_get_contents($url, NULL, $context);
+
+			} else {
+				$fh = fopen($url, 'r', FALSE, $context);
+				$content = '';
+				while (!feof($fh)) {
+					$content .= fread($fh, 128); // because filesize() will not work on URLS?
+				}
+				fclose($fh);
+			}
+
+		}
+
+		return $content;
+	}
+
+	/* make absolute URL from relative */
+	function rel2abs($rel, $base) {
+
+		extract(parse_url( $base ));
+
+		if (strpos($rel,"//") === 0) return $scheme . ':' . $rel;
+		if (parse_url( $rel, PHP_URL_SCHEME) != '' ) return $rel;
+		if ($rel[0] == '#' or $rel[0] == '?') return $base . $rel;
+
+		$path = preg_replace('#/[^/]*$#', '', $path);
+		if ($rel[0] == '/') $path = '';
+
+		$abs = $host . $path . "/" . $rel;
+		$abs = preg_replace("/(\/\.?\/)/", "/", $abs);
+		$abs = preg_replace("/\/(?!\.\.)[^\/]+\/\.\.\//", "/", $abs);
+
+		return $scheme . '://' . $abs;
+	}
+
+
+// ORIGINAL favicon() methods
+
+
+	/*
+	check the image type and convert & resize it if required
+	returns the absolute path of the (converted) .png file 
+	*/
+	function convert_favicon() {
 
 		global $convert, $identify;
 
@@ -52,153 +277,6 @@ class favicon {
 		}
 	}
 
-	###
-	### download and save favicon
-	###
-	function get_favicon_image () {
-		//Selbstgebastelte, IIS-kompatible Version von Arne Haak (www.arnehaak.de)
-		# HTTP-Url auswerten
-		$httpparsed = $this->return_parse_url ($this->favicon_url);
-
-		//HTTP-Request-Header erzeugen
-		$httprequest = "GET ".$httpparsed['path']." HTTP/1.0\r\n".
-				"Accept: */*\r\n".
-				"Accept-Language: en\r\n".
-				"Accept-Encoding: identity\r\n".
-				"User-Agent: Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)\r\n".
-				"Host: ".$httpparsed['host']."\r\n".
-				"Connection: close\r\n\r\n";
-
-		//Verbindung aufbauen und Request abschicken
-		if ($httphandle = fsockopen($httpparsed['host'],$httpparsed['port'])) {
-			fputs($httphandle, $httprequest);
-
-			//Daten runterladen solange vorhanden
-			$answerdata = null;
-			do {
-				$answerdata .= fread($httphandle, 1024);
-			} while (feof($httphandle) != true);
-
-			// Verbindung schliessen
-			fclose ($httphandle);
-
-			//Header finden und abtrennen
-			$finalposi = strpos($answerdata, "\r\n\r\n") + 4;  //Position des ersten Bytes nach dem Header bestimmen
-			$finalfile = substr($answerdata, $finalposi, strlen($answerdata) - $finalposi); //Header abschneiden
-
-			//Datei abspeichern
-			if ($fp = @fopen("./favicons/" . $this->icon_name, "w")) {
-				fwrite($fp, $finalfile);
-				fclose($fp);
-				return true;
-			}
-			else {
-				return false;
-			}
-		}
-		else {
-			return false;
-		}
-	}
-
-	###
-	### checks for the existence of a favicon on a remote server
-	### and returns the url if one exist
-	###
-	function get_favicon_url () {
-		global $timeout;
-		# search for favicon in document root first
-		if ($socket = @fsockopen ($this->parsed_url['host'], $this->parsed_url['port'], $errno, $errstr, $timeout)) {
-			fwrite ($socket, "HEAD /favicon.ico HTTP/1.0\r\nHost: " . $this->parsed_url['host'] . "\r\n\r\n");
-			$http_response = fgets ($socket, 22);
-			fclose ($socket);
-			if (preg_match ("/200 OK/", $http_response)) {
-				#echo "favicon found in document root\n";
-				return $this->parsed_url['scheme'] . "://" . $this->parsed_url['host'] . ":" . $this->parsed_url['port'] . "/favicon.ico";
-			}
-			else {
-				# if favicon was not found in document root, search in html header for it
-				if ($socket = @fsockopen ($this->parsed_url['host'], $this->parsed_url['port'], $errno, $errstr, $timeout)) {
-					fwrite ($socket, "GET " . $this->parsed_url['path'] . " HTTP/1.0\r\nHost: " . $this->parsed_url['host'] . "\r\n\r\n");
-					while (!feof ($socket)) {
-						$html = fgets ($socket, 1024);
-						if ($html == null) {
-							return false;
-						}
-
-						# we only want to search in HTML documents
-						if (preg_match ('/.*Content-Type:.*/si', $html, $contenttype)) {
-							if ( ! preg_match ('/text\/html/si', $contenttype[0])) {
-								return false;
-							}
-						}
-
-						if (preg_match ('/<link[^>]+rel="(?:shortcut )?icon".*>/si', $html, $tag)) {
-							#echo "found favicon in html header\n";
-							if (preg_match ('/<link[^>]+href="([^"]+)".*>/si', $tag[0], $location)) {
-								# the favicon location is an url
-								if (substr($location[1], 0, 7) == 'http://') {
-									$favicon = $location[1];
-								}
-								# the favicon location is an absolute path
-								else if (substr ($location[1], 0, 1) == '/') {
-									$favicon = $this->parsed_url['scheme'] . '://' . $this->parsed_url['host'] . ":" . $this->parsed_url['port'] . $location[1];
-								}
-								# else the path can only be something useless
-								# or a relative path, looking like this.
-								# ./path/to/favicon.ico
-								# path/to/favicon.ico
-								else {
-									# The location we called is either a file or a directory.
-									# We have to guess. We assume it is a directory if there is a trailing slash
-									if (substr ($this->parsed_url['path'], strlen($this->parsed_url['path'])-1) == "/") {
-										$favicon = $this->parsed_url['scheme'] . '://' . $this->parsed_url['host'] . ":" . $this->parsed_url['port'] . $this->parsed_url['path'] . $location[1];
-									}
-									else {
-										$favicon = $this->parsed_url['scheme'] . '://' . $this->parsed_url['host'] . ":" . $this->parsed_url['port'] . dirname ($this->parsed_url['path']) . '/' . $location[1];
-									}
-								}
-								return $favicon;
-							}
-						}
-						else if (preg_match ('/.*<\/head.*>/si', $html)) {
-							#echo "html header end found, giving up\n";
-							return false;
-						}
-					}
-					fclose ($socket);
-				}
-			}
-		}
-		return false;
-	}
-
-	###
-	### returns an array with parts of the given url
-	###
-	function return_parse_url ($url) {
-		if ($parsed = @parse_url ($url)) {
-			if (!isset ($parsed['scheme']) || $parsed['scheme'] == "") {
-				$parsed['scheme'] = "http";
-			}
-			else if ($parsed['scheme'] != "http") {
-				return false;
-			}
-			if (!isset ($parsed['host']) || $parsed['host'] == "") {
-				return false;
-			}
-			if (!isset ($parsed['port']) || $parsed['port'] == "") {
-				$parsed['port'] = 80;
-			}
-			if (!isset ($parsed['path']) || $parsed['path'] == "") {
-				$parsed['path'] = "/";
-			}
-			return ($parsed);
-		}
-		else {
-			return false;
-		}
-	}
 }
 
 ?>

@@ -88,8 +88,8 @@ else {
 	}
 	unset ($_SESSION['title'], $_SESSION['url']);
 
-	# safing the favicon in a separate second step is done because
-	# we want to make sure the bookmark is safed in any case. the
+	# saving the favicon in a separate second step is done because
+	# we want to make sure the bookmark is saved in any case. the
 	# favicon is not that important.
 	if ($settings['show_bookmark_icon']) {
 		require_once (ABSOLUTE_PATH . "favicon.php");
