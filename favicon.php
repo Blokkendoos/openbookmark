@@ -48,9 +48,7 @@ class favicon {
 		}
 
 		if ($this->favicon_url) {
-			$file_name = basename($this->favicon_url);
-			$file_ext = substr(strrchr($file_name,'.'), 1);
-			$this->icon_name = rand() . "_" . hash("sha1", basename($this->favicon_url)) . "." . $file_ext;
+			$this->icon_name = rand() . "_" . hash("sha1", basename($this->favicon_url));
 			$retval = $this->get_favicon_image();
 		}
 
@@ -158,7 +156,7 @@ class favicon {
 
 		// use an agent that is likely to be accepted by the host
 		$user_agent = "Mozilla/5.0 (Windows NT 5.1; rv:31.0) Gecko/20100101 Firefox/31.0";
-		
+
 		// use curl or file_get_contents (both with user_agent) and fopen/fread as fallback
 		if (function_exists('curl_version')) {
 
@@ -222,7 +220,7 @@ class favicon {
 		$tmp_file = "./favicons/" . $this->icon_name;
 
 		# find out file type
-		if (@exec("$identify '" . $tmp_file . "'", $output)) {
+		if (@exec("$identify $tmp_file", $output)) {
 			$ident = explode(" ", $output[0]);
 			if (count($output) > 1) {
 				$file_to_convert = $ident[0];
