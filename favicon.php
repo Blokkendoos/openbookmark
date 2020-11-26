@@ -64,84 +64,68 @@ class favicon {
 		$trySelf = (isset($options['TRY']))?$options['TRY']:true;
 
 		$url = strtolower($url);
-		$domain = parse_url($url, PHP_URL_HOST);
+		$domain = $this->check_domain(parse_url($url, PHP_URL_HOST));
 
-		$domain = $this->check_domain($domain);
+		// If $trySelf == TRUE ONLY USE APIs
+		if (isset($trySelf) and $trySelf == TRUE) {	 
 
-		// Make Path & Filename
-		$filePath = preg_replace('#\/\/#', '/', $directory.'/'.$domain.'.png');
-		// change save path & filename of icons ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+			// Load Page
+			$html = $this->load($url);
 
-		// If Favicon not already exists local
-		if (!file_exists($filePath) or @filesize($filePath) == 0) {
-
-			// If $trySelf == TRUE ONLY USE APIs
-			if (isset($trySelf) and $trySelf == TRUE) {	 
-
-				// Load Page
-				$html = $this->load($url);
-
-				// Find Favicon with RegEx
-				$regExPattern = '/((<link[^>]+rel=.(icon|shortcut icon|alternate icon)[^>]+>))/i';
-				if (@preg_match($regExPattern, $html, $matchTag)) {
-					$regExPattern = '/href=(\'|\")(.*?)\1/i';
-					if (isset($matchTag[1]) and @preg_match($regExPattern, $matchTag[1], $matchUrl)) {
-						if (isset($matchUrl[2])) {
-							// Build Favicon Link
-							$favicon = $this->rel2abs(trim($matchUrl[2]), 'http://'.$domain.'/');
-						}
+			// Find Favicon with RegEx
+			$regExPattern = '/((<link[^>]+rel=.(icon|shortcut icon|alternate icon)[^>]+>))/i';
+			if (@preg_match($regExPattern, $html, $matchTag)) {
+				$regExPattern = '/href=(\'|\")(.*?)\1/i';
+				if (isset($matchTag[1]) and @preg_match($regExPattern, $matchTag[1], $matchUrl)) {
+					if (isset($matchUrl[2])) {
+						// Build Favicon Link
+						$favicon = $this->rel2abs(trim($matchUrl[2]), 'http://'.$domain.'/');
 					}
 				}
+			}
 
-				// If there is no Match: Try if there is a Favicon in the Root of the Domain
-				if (empty($favicon)) { 
-					$favicon = 'http://'.$domain.'/favicon.ico';
+			// If there is no Match: Try if there is a Favicon in the Root of the Domain
+			if (empty($favicon)) { 
+				$favicon = 'http://'.$domain.'/favicon.ico';
 
-					// Try to Load Favicon
-					if (!@getimagesize($favicon)) {
-						unset($favicon);
-					}
+				// Try to Load Favicon
+				if (!@getimagesize($favicon)) {
+					unset($favicon);
 				}
+			}
+		}
 
-			} // END If $trySelf == TRUE ONLY USE APIs
+		// If nothink works: Get the Favicon from API
+		if (!isset($favicon) or empty($favicon)) {
 
-			// If nothink works: Get the Favicon from API
-			if (!isset($favicon) or empty($favicon)) {
+			// Select API by Random
+			$random = rand(1,3);
 
-				// Select API by Random
-				$random = rand(1,3);
+			// Faviconkit API
+			if ($random == 1 or empty($favicon)) {
+				$favicon = 'https://api.faviconkit.com/'.$domain.'/16';
+			}
 
-				// Faviconkit API
-				if ($random == 1 or empty($favicon)) {
-					$favicon = 'https://api.faviconkit.com/'.$domain.'/16';
-				}
+			// Favicongrabber API
+			if ($random == 2 or empty($favicon)) {
+				$echo = json_decode(load('http://favicongrabber.com/api/grab/'.$domain,FALSE),TRUE);
 
-				// Favicongrabber API
-				if ($random == 2 or empty($favicon)) {
-					$echo = json_decode(load('http://favicongrabber.com/api/grab/'.$domain,FALSE),TRUE);
+				// Get Favicon URL from Array out of json data (@ if something went wrong)
+				$favicon = @$echo['icons']['0']['src'];
 
-					// Get Favicon URL from Array out of json data (@ if something went wrong)
-					$favicon = @$echo['icons']['0']['src'];
+			}
 
-				}
+			// Google API (check also md5() later)
+			if ($random == 3) {
+				$favicon = 'http://www.google.com/s2/favicons?domain='.$domain;
+			} 
+		}
 
-				// Google API (check also md5() later)
-				if ($random == 3) {
-					$favicon = 'http://www.google.com/s2/favicons?domain='.$domain;
-				} 
-
-			} // END If nothink works: Get the Favicon from API
-
-			$filePath = $favicon;
-
-		} // END If Favicon not already exists local
-
-		// reset script runtime timeout
-		set_time_limit($max_execution_time); // set it back to the old value
+		// restore script runtime timeout
+		set_time_limit($max_execution_time);
 
 		// Return Favicon Url
-		return $filePath;
-
+		return $favicon;
 	}
 
 	function check_domain($domain) {
