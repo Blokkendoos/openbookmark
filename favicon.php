@@ -51,7 +51,7 @@ class favicon {
 
 		if ($this->favicon_url) {
 			if ($this->debug) error_log("we have an URL, get image from:".$this->favicon_url);
-			$this->icon_name = rand() . basename($this->favicon_url);
+			$this->icon_name = rand() . "_" . hash("sha1", basename($this->favicon_url));
 			$retval = $this->get_favicon_image();
 		}
 
