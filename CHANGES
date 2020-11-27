@@ -1,3 +1,10 @@
+27.11.2020
+- Fixed icons not found, using PHP-Grab-Favicon by I. Gaffling.
+- Refactored the favicon.php code.
+
+27.09.2019
+- Added bookmark verification.
+
 16.04.2008, Version 0.8.8 beta
 - New design.
 - Added the possibility to change the public/private status on multiple
@@ -30,4 +37,4 @@
 - Adjusted order function so that arrow changes direction when changing order.
 
 12.08.2008, Version 0.8.14_beta
-- Getting rid of dangeros $GLOBALS in export.php, import.php and folders.php.
+- Getting rid of dangerous $GLOBALS in export.php, import.php and folders.php.
