@@ -2,14 +2,14 @@
 /**
  PHP Grab favicon
 
- @category  Favicon
+ @category  Bookmarks
  @package   Openbookmark
  @author    J. van Oostrum <jvo@chaosgeordend.nl>
- @copyright 2019-2020 Igor Gaffling
- @license   MIT License
- @link      https://github.com/gaffling/PHP-Grab-Favicon/blob/master/get-fav.php
-            favicon info: https://github.com/audreyr/favicon-cheat-sheet
- */ 
+ @copyright 2010 Brendan LaMarche
+ @license   GNU General Public License version 2
+ @link      https://github.com/blamarche/openbookmark
+ @link      https://github.com/blokkendoos/openbookmark
+ */
 
 if (basename($_SERVER['SCRIPT_NAME']) == basename (__FILE__)) {
     die("no direct access allowed");
@@ -24,7 +24,7 @@ if (basename($_SERVER['SCRIPT_NAME']) == basename (__FILE__)) {
  @copyright 2019-2020 Igor Gaffling
  @license   MIT License
  @link      https://github.com/gaffling/PHP-Grab-Favicon/blob/master/get-fav.php
-            favicon info: https://github.com/audreyr/favicon-cheat-sheet
+ @link      https://github.com/blokkendoos/openbookmark
  */
 class favicon
 {
@@ -280,3 +280,4 @@ class favicon
 }
 
 ?>
+
