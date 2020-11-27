@@ -1,4 +1,5 @@
 <?php
+
 if (basename($_SERVER['SCRIPT_NAME']) == basename (__FILE__)) {
 	die ("no direct access allowed");
 }
@@ -44,7 +45,7 @@ class favicon {
 
 		$this->get_favicon_url($url, $domain);
 		if (empty($this->favicon_url)) {
-			$this->get_favicon_api($url, $domain);
+			$this->get_favicon_api($domain);
 		}
 
 		if ($this->favicon_url) {
@@ -94,32 +95,27 @@ class favicon {
 	/*
 	Try to load the favicon using a public API
 	*/
-	function get_favicon_api($url, $domain) {
-
-		$favicon = $this->favicon_url;
-
+	function get_favicon_api($domain) {
 		// Select API at random
 		$random = rand(1, 3);
 
 		// Faviconkit
-		if ($random == 1 or empty($favicon)) {
-			$favicon = 'https://api.faviconkit.com/'.$domain.'/16';
+		if ($random == 1) {
+			$this->favicon_url = 'https://api.faviconkit.com/'.$domain.'/16';
 		}
 
 		// Favicongrabber
-		if ($random == 2 or empty($favicon)) {
-			$echo = json_decode($this->load('http://favicongrabber.com/api/grab/'.$domain), TRUE);
+		if ($random == 2) {
+			$echo = json_decode($this->load('http://favicongrabber.com/api/grab/'.$domain), true);
 			// Get Favicon URL from Array out of json data (@ if something went wrong)
-			$favicon = @$echo['icons']['0']['src'];
+			$this->favicon_url = @$echo['icons']['0']['src'];
 		}
 
 		// Google (check also md5() later)
-		if ($random == 3 or empty($favicon)) {
-			$echo = json_decode($this->load('http://favicongrabber.com/api/grab/'.$domain), TRUE);
-			$favicon = 'http://www.google.com/s2/favicons?domain='.$domain;
+		if ($random == 3) {
+			$echo = json_decode($this->load('http://favicongrabber.com/api/grab/'.$domain), true);
+			$this->favicon_url = 'http://www.google.com/s2/favicons?domain='.$domain;
 		} 
-
-		$this->favicon_url = $favicon;
 	}
 
 	function check_domain($domain) {
@@ -188,7 +184,7 @@ class favicon {
 				$content = file_get_contents($url, NULL, $context);
 
 			} else {
-				$fh = fopen($url, 'r', FALSE, $context);
+				$fh = fopen($url, 'r', false, $context);
 				$content = '';
 				while (!feof($fh)) {
 					$content .= fread($fh, 128); // because filesize() will not work on URLS?
@@ -201,10 +197,10 @@ class favicon {
 
 	/* make absolute URL from relative */
 	function rel2abs($rel, $base) {
-		extract(parse_url( $base ));
+		extract(parse_url($base));
 
 		if (strpos($rel,"//") === 0) return $scheme . ':' . $rel;
-		if (parse_url( $rel, PHP_URL_SCHEME) != '' ) return $rel;
+		if (parse_url($rel, PHP_URL_SCHEME) != '') return $rel;
 		if ($rel[0] == '#' or $rel[0] == '?') return $base . $rel;
 
 		$path = preg_replace('#/[^/]*$#', '', $path);
