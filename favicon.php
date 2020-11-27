@@ -80,22 +80,26 @@ class favicon {
 		// If there is no Match: Try if there is a Favicon in the Root of the Domain
 		if (empty($favicon)) { 
 			$favicon = 'http://'.$domain.'/favicon.ico';
-			// Try to Load Favicon
-			if (!@getimagesize($favicon)) {
-				$favicon = NULL;
-			}
 		}
 
-		$this->favicon_url = $favicon;
+		// Try to Load Favicon
+		if (@getimagesize($favicon)) {
+			$this->favicon_url = $favicon;
+		}
+		else {
+			$this->favicon_url = NULL;
+		}
 	}
 
 	/*
 	Try to load the favicon using a public API
 	*/
 	function get_favicon_api($url, $domain) {
-		// Select API by Random
-		$random = 2;
-		$random = rand(1,3);
+
+		$favicon = $this->favicon_url;
+
+		// Select API at random
+		$random = rand(1, 3);
 
 		// Faviconkit
 		if ($random == 1 or empty($favicon)) {
@@ -110,7 +114,8 @@ class favicon {
 		}
 
 		// Google (check also md5() later)
-		if ($random == 3) {
+		if ($random == 3 or empty($favicon)) {
+			$echo = json_decode($this->load('http://favicongrabber.com/api/grab/'.$domain), TRUE);
 			$favicon = 'http://www.google.com/s2/favicons?domain='.$domain;
 		} 
 
