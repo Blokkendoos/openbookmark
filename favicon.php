@@ -108,6 +108,7 @@ class favicon
 
         // Try to Load Favicon
         if (@getimagesize($favicon)) {
+            if ($this->debug) error_log("URL: $favicon");
             $this->favicon_url = $favicon;
         } else {
             $this->favicon_url = null;
@@ -128,11 +129,13 @@ class favicon
 
         // Faviconkit
         if ($random == 1) {
+            if ($this->debug) error_log('FaviconKit');
             $this->favicon_url = 'https://api.faviconkit.com/'.$domain.'/16';
         }
 
         // Favicongrabber
         if ($random == 2) {
+            if ($this->debug) error_log('FaviconGrabber');
             $echo = json_decode($this->load('http://favicongrabber.com/api/grab/'.$domain), true);
             // Get Favicon URL from Array out of json data (@ if something went wrong)
             $this->favicon_url = @$echo['icons']['0']['src'];
@@ -140,12 +143,18 @@ class favicon
 
         // Google (check also md5() later)
         if ($random == 3) {
+            if ($debug) error_log('Google');
             $this->favicon_url = 'http://www.google.com/s2/favicons?domain='.$domain;
         } 
     }
 
     function check_domain($domain)
     {
+        // strip parameters, if any
+        $qm_pos = strpos($domain, '?');
+        if ($qm_pos) {
+            $domain = substr($domain, 0, $qm_pos);
+        }
         $domainParts = explode('.', $domain);
         if (count($domainParts) == 3 and $domainParts[0] != 'www') {
             // with Subdomain (if not www)
@@ -172,7 +181,9 @@ class favicon
     function get_favicon_image()
     {
         $image = $this->load($this->favicon_url);
-        if ($fp = @fopen("./favicons/" . $this->icon_name, "w")) {
+        if (file_exists($this->icon_name)) {
+            return true;
+        } else if ($fp = @fopen($this->icon_name, 'w')) {
             fwrite($fp, $image);
             fclose($fp);
             return true;
@@ -263,22 +274,22 @@ class favicon
     {
         global $convert, $identify;
 
-        $tmp_file = "./favicons/" . $this->icon_name;
+        $fname = $this->icon_name;
 
         // find out file type
-        if (@exec("$identify $tmp_file", $output)) {
+        if (@exec("$identify $fname", $output)) {
             $ident = explode(' ', $output[0]);
             if (count($output) > 1) {
                 $file_to_convert = $ident[0];
             } else {
-                $file_to_convert = $tmp_file;
+                $file_to_convert = $fname;
             }
             // convert image in any case to 16x16 and .png
-            system("$convert $file_to_convert -resize 16x16 $tmp_file.png");
-            @unlink($tmp_file);
-            return $tmp_file . ".png";
+            system("$convert $file_to_convert -resize 16x16 $fname.png");
+            @unlink($fname);
+            return $fname . '.png';
         } else {
-            @unlink($tmp_file);
+            @unlink($fname);
             return false;
         }
     }
