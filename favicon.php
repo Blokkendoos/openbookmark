@@ -33,7 +33,7 @@ class favicon
     {
         global $settings, $convert_favicons;
 
-        $this->debug = true;
+        $this->debug = false;
         $this->favicon_dir = './favicons/';
 
         if ($settings['show_bookmark_icon']) {
@@ -64,6 +64,11 @@ class favicon
         }
 
         if ($this->favicon_url) {
+            // strip parameters from the URL, if any
+            $qm_pos = strpos($this->favicon_url, '?');
+            if ($qm_pos) {
+                $this->favicon_url = substr($this->favicon_url, 0, $qm_pos);
+            }
             $file_name = basename($this->favicon_url);
             $file_ext = substr(strrchr($file_name, '.'), 1);
             $this->icon_name = $this->favicon_dir . 
@@ -150,11 +155,6 @@ class favicon
 
     function check_domain($domain)
     {
-        // strip parameters, if any
-        $qm_pos = strpos($domain, '?');
-        if ($qm_pos) {
-            $domain = substr($domain, 0, $qm_pos);
-        }
         $domainParts = explode('.', $domain);
         if (count($domainParts) == 3 and $domainParts[0] != 'www') {
             // with Subdomain (if not www)
