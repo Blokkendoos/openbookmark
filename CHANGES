@@ -1,5 +1,6 @@
 27.11.2020
-- Fixed icons not found, using PHP-Grab-Favicon by I. Gaffling.
+- Fixed icons not found, using PHP-Grab-Favicon by I. Gaffling and
+  DataUri from Lucas 'SketchingDev'.
 - Refactored the favicon.php code.
 
 27.09.2019
