@@ -12,8 +12,9 @@
  */
 
 if (basename($_SERVER['SCRIPT_NAME']) == basename (__FILE__)) {
-    die("no direct access allowed");
+    die('no direct access allowed');
 }
+
 
 /**
  PHP Grab favicon
@@ -32,12 +33,15 @@ class favicon
     {
         global $settings, $convert_favicons;
 
+        $this->debug = true;
+        $this->favicon_dir = './favicons/';
+
         if ($settings['show_bookmark_icon']) {
             if ($this->get_favicon($url)) {
                 if ($convert_favicons) {
                     $this->favicon = $this->convert_favicon();
                 } else {
-                    $this->favicon = "./favicons/" . $this->icon_name;
+                    $this->favicon = $this->icon_name;
                 }
             }
         }
@@ -48,7 +52,7 @@ class favicon
         $retval = false;
         
         // avoid script runtime timeout
-        $max_execution_time = ini_get("max_execution_time");
+        $max_execution_time = ini_get('max_execution_time');
         set_time_limit(0); // 0 = no timelimit
 
         $url = strtolower($url);
@@ -62,7 +66,9 @@ class favicon
         if ($this->favicon_url) {
             $file_name = basename($this->favicon_url);
             $file_ext = substr(strrchr($file_name, '.'), 1);
-            $this->icon_name = rand() . "_" . hash("sha1", $file_name) . ".$file_ext";
+            $this->icon_name = $this->favicon_dir . 
+                               hash('sha1', $file_name) . 
+                               ".$file_ext";
             $retval = $this->get_favicon_image();
         }
 
@@ -73,7 +79,7 @@ class favicon
     }
 
     /**
-     Try to load the favicon from the given URL
+     Try to load the favicon from the given URL.
 
      @param $url    the URL
      @param $domain domain-name
@@ -109,7 +115,7 @@ class favicon
     }
 
     /**
-     Try to load the favicon using a public API
+     Try to load the favicon using a public API.
 
      @param $domain The domain 
 
@@ -134,7 +140,6 @@ class favicon
 
         // Google (check also md5() later)
         if ($random == 3) {
-            $echo = json_decode($this->load('http://favicongrabber.com/api/grab/'.$domain), true);
             $this->favicon_url = 'http://www.google.com/s2/favicons?domain='.$domain;
         } 
     }
@@ -160,7 +165,7 @@ class favicon
     }
 
     /**
-     Get and save the favicon image,
+     Get the favicon image and save it, if not yet cached.
 
      @return true when successful, otherwise false
      */
@@ -186,7 +191,7 @@ class favicon
     function load($url)
     {
         // use an agent that is likely to be accepted by the host
-        $user_agent = "Mozilla/5.0 (Windows NT 5.1; rv:31.0) Gecko/20100101 Firefox/31.0";
+        $user_agent = 'Mozilla/5.0 (Windows NT 5.1; rv:31.0) Gecko/20100101 Firefox/31.0';
 
         // use curl or file_get_contents (both with user_agent) and fopen/fread as fallback
         if (function_exists('curl_version')) {
@@ -224,7 +229,7 @@ class favicon
     }
 
     /**
-     Make absolute URL from relative
+     Make absolute URL from relative.
 
      @param $rel  relative URL
      @param $base the URL base
@@ -242,15 +247,15 @@ class favicon
         $path = preg_replace('#/[^/]*$#', '', $path);
         if ($rel[0] == '/') $path = '';
 
-        $abs = $host . $path . "/" . $rel;
-        $abs = preg_replace("/(\/\.?\/)/", "/", $abs);
-        $abs = preg_replace("/\/(?!\.\.)[^\/]+\/\.\.\//", "/", $abs);
+        $abs = $host . $path . '/' . $rel;
+        $abs = preg_replace('/(\/\.?\/)/', '/', $abs);
+        $abs = preg_replace('/\/(?!\.\.)[^\/]+\/\.\.\//', '/', $abs);
 
         return $scheme . '://' . $abs;
     }
 
     /**
-     Check the image type and convert & resize it if required
+     Check the image type and convert & resize it if required.
 
      @return absolute path of the (converted) .png file
      */
@@ -262,7 +267,7 @@ class favicon
 
         // find out file type
         if (@exec("$identify $tmp_file", $output)) {
-            $ident = explode(" ", $output[0]);
+            $ident = explode(' ', $output[0]);
             if (count($output) > 1) {
                 $file_to_convert = $ident[0];
             } else {
