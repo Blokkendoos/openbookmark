@@ -1,5 +1,6 @@
 <?php
-/* The MIT License (MIT)
+/**
+ * The MIT License (MIT)
  * Copyright (c) 2015 FlyingTopHat (lucas@flyingtophat.co.uk)
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,11 +27,11 @@
  *  - Validate the media-type provided/parsed
  *  - Validate the encoded data provided/parsed
  * 
- * @link http://www.flyingtophat.co.uk/blog/27/using-data-uris-in-php Examples
- * @author <a href="http://www.flyingtophat.co.uk/">Lucas</a>
+ * @author Lucas <http://www.flyingtophat.co.uk>
+ * @link   http://www.flyingtophat.co.uk/blog/27/using-data-uris-in-php Examples
  */
-class DataUri {
-    
+class DataUri
+{
     /** @var Regular expression used for decomposition of data URI scheme */
     private static $REGEX_URI = '/^data:(.+?){0,1}(?:(?:;(base64)\,){1}|\,)(.+){0,1}$/';
     
@@ -51,11 +52,11 @@ class DataUri {
      * default values defined in RFC 2397. That is the media-type of 
      * text/plain;charset=US-ASCII and encoding type of URL encoded octets.
      * 
-     * @param string $mediaType
-     * @param string $data  Unencoded data
-     * @param integer $encoding Class constant of either
-     * {@link DataUri::ENCODING_URL_ENCODED_OCTETS} or
-     * {@link DataUri::ENCODING_BASE64}
+     * @param string  $mediaType Media-type
+     * @param string  $data      Unencoded data
+     * @param integer $encoding  Class constant of either
+     *                           {@link DataUri::ENCODING_URL_ENCODED_OCTETS} or
+     *                           {@link DataUri::ENCODING_BASE64}
      * 
      * @throws InvalidArgumentException
      */
@@ -77,7 +78,8 @@ class DataUri {
      * 
      * @return string Media-type
      */
-    public function getMediaType() {
+    public function getMediaType()
+    {
         return empty($this->mediaType) === false
             ? $this->mediaType
             : DataUri::DEFAULT_TYPE;
@@ -88,7 +90,8 @@ class DataUri {
      * 
      * @param string $mediaType Media-type
      */
-    public function setMediaType($mediaType) {
+    public function setMediaType($mediaType)
+    {
         $this->mediaType = $mediaType;
     }
     
@@ -96,10 +99,11 @@ class DataUri {
      * Returns the method of encoding used for the data.
      * 
      * @return int Class constant of either 
-     * {@link DataUri::ENCODING_URL_ENCODED_OCTETS} or
-     * {@link DataUri::ENCODING_BASE64}
+     *             {@link DataUri::ENCODING_URL_ENCODED_OCTETS} or
+     *             {@link DataUri::ENCODING_BASE64}
      */
-    public function getEncoding() {
+    public function getEncoding()
+    {
         return $this->encoding;
     }
     
@@ -108,7 +112,8 @@ class DataUri {
      * 
      * @return string Encoded data
      */
-    public function getEncodedData() {
+    public function getEncodedData()
+    {
         return $this->encodedData;
     }
     
@@ -117,19 +122,20 @@ class DataUri {
      * Be aware that the data is not validated, so ensure that the correct
      * encoding scheme is provided otherwise the method 
      * {@link DataUri::tryDecodeData($decodedData)} will fail.
-
-     * @param int $encoding Class constant of either 
-     * {@link DataUri::ENCODING_URL_ENCODED_OCTETS} or
-     * {@link DataUri::ENCODING_BASE64}
-     * @param string $data Data encoded with the encoding scheme provided
+     *
+     * @param int    $encoding Class constant of either
+     *                         {@link DataUri::ENCODING_URL_ENCODED_OCTETS} or
+     *                         {@link DataUri::ENCODING_BASE64}
+     * @param string $data     Data encoded with the encoding scheme provided
+     *
      * @throws InvalidArgumentException
      */
-    public function setEncodedData($encoding, $data) {
-        if(($encoding !== DataUri::ENCODING_URL_ENCODED_OCTETS) &&
+    public function setEncodedData($encoding, $data)
+    {
+        if (($encoding !== DataUri::ENCODING_URL_ENCODED_OCTETS) &&
             ($encoding !== DataUri::ENCODING_BASE64)) {
             throw new InvalidArgumentException('Unsupported encoding scheme');
         }
-        
         $this->encoding = $encoding;
         $this->encodedData = $data;
     }
@@ -139,20 +145,22 @@ class DataUri {
      * Sets the data for the data URI, which it stores in encoded form using
      * the encoding scheme provided.
      * 
-     * @param string $data Data to encode then store
-     * @param int $encoding Class constant of either 
-     * {@link DataUri::ENCODING_URL_ENCODED_OCTETS} or
-     * {@link DataUri::ENCODING_BASE64}
+     * @param string $data     Data to encode then store
+     * @param int    $encoding Class constant of either
+     *                         {@link DataUri::ENCODING_URL_ENCODED_OCTETS} or
+     *                         {@link DataUri::ENCODING_BASE64}
+     *
      * @throws InvalidArgumentException
      */
-    public function setData($data, $encoding = DataUri::ENCODING_URL_ENCODED_OCTETS) {
+    public function setData($data, $encoding = DataUri::ENCODING_URL_ENCODED_OCTETS)
+    {
         switch($encoding) {
             case DataUri::ENCODING_URL_ENCODED_OCTETS:
-		$this->encoding = DataUri::ENCODING_URL_ENCODED_OCTETS;
+                $this->encoding = DataUri::ENCODING_URL_ENCODED_OCTETS;
                 $this->encodedData = rawurlencode($data);
                 break;
             case DataUri::ENCODING_BASE64:
-		$this->encoding = DataUri::ENCODING_BASE64;
+                $this->encoding = DataUri::ENCODING_BASE64;
                 $this->encodedData = base64_encode($data);
                 break;
             default:
@@ -165,10 +173,12 @@ class DataUri {
      * Tries to decode the URI's data using the encoding scheme set.
      * 
      * @param null $decodedData Stores the decoded data
+     *
      * @return boolean <code>true</code> if data was output, 
-     * else <code>false</code>
+     *                 else <code>false</code>
      */
-    public function tryDecodeData(&$decodedData) {
+    public function tryDecodeData(&$decodedData)
+    {
         $hasOutput = false;
         
         switch($this->getEncoding()) {
@@ -179,7 +189,7 @@ class DataUri {
             case DataUri::ENCODING_BASE64:
                 $b64Decoded = base64_decode($this->getEncodedData(), true);
 
-                if($b64Decoded !== false) {
+                if ($b64Decoded !== false) {
                     $decodedData = $b64Decoded;
                     $hasOutput = true;
                 }
@@ -197,14 +207,15 @@ class DataUri {
      * 
      * @return string
      */
-    public function toString() {
+    public function toString()
+    {
         $output = 'data:';
         
-        if(($this->getMediaType() !== DataUri::DEFAULT_TYPE) || 
+        if (($this->getMediaType() !== DataUri::DEFAULT_TYPE) ||
             ($this->getEncoding() !== DataUri::ENCODING_URL_ENCODED_OCTETS)) {
             $output .= $this->getMediaType();
 
-            if($this->getEncoding() === DataUri::ENCODING_BASE64) {
+            if ($this->getEncoding() === DataUri::ENCODING_BASE64) {
                 $output .= ';'.DataUri::BASE64_KEYWORD;
             }
         }
@@ -222,27 +233,32 @@ class DataUri {
      * Determines whether a string is data URI with the components necessary for
      * it to be parsed by the {@link DataUri::tryParse($s, &$out)} method.
      * 
-     * @param string $string Data URI
+     * @param string $dataUriString Data URI
+     *
      * @return boolean <code>true</code> if possible to parse,
-     * else <code>false</code>
+     *                 else <code>false</code>
      */
-    public static function isParsable ($dataUriString) {
+    public static function isParsable($dataUriString)
+    {
         return (preg_match(DataUri::$REGEX_URI, $dataUriString) === 1);
     }
     
     /**
      * Parses a string data URI into an instance of a DataUri object.
      * 
-     * @param string $dataUriString Data URI to be parsed
-     * @param DataUri $out Output DataUri of the method
+     * @param string  $dataUriString Data URI to be parsed
+     * @param DataUri $out           Output DataUri of the method
+     *
      * @return boolean <code>true</code> if successful, else <code>false</code>
      */
-    public static function tryParse($dataUriString, &$out) {
+    public static function tryParse($dataUriString, &$out)
+    {
         $hasOutput = false;
         
-        if(DataUri::isParsable($dataUriString)) {
+        if (DataUri::isParsable($dataUriString)) {
             $matches = null;
-            if(preg_match_all(DataUri::$REGEX_URI,
+            if (preg_match_all(
+                DataUri::$REGEX_URI,
                 $dataUriString,
                 $matches,
                 PREG_SET_ORDER) !== false) {

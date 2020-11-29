@@ -29,7 +29,9 @@ if (basename($_SERVER['SCRIPT_NAME']) == basename (__FILE__)) {
  */
 class favicon
 {
+    /** @var Boolean Set to <code>true</code> to show debugging messages */
     private $debug = false;
+    /** @var String The directory where the favicon images are stored */
     private $favicon_dir = './favicons/';
 
     function favicon($url)
@@ -112,7 +114,7 @@ class favicon
     function get_favicon_url($url, $domain)
     {
         $html = $this->load($url);
-        // find favicon with RegEx
+        /** @var Regular expression used for searching a favicon in the URL */
         $regExPattern = '/((<link[^>]+rel=.(icon|shortcut icon|alternate icon)[^>]+>))/i';
         if (@preg_match($regExPattern, $html, $matchTag)) {
             $regExPattern = '/href=(\'|\")(.*?)\1/i';
