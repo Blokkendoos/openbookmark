@@ -65,7 +65,7 @@ class favicon
         set_time_limit(0);  // 0 = no timelimit
 
         $url = strtolower($url);
-        $domain = $this->check_domain(parse_url($url, PHP_URL_HOST));
+        $domain = $this->check_domain($url);
 
         $this->get_favicon_url($url, $domain);
         if (empty($this->favicon_url)) {
@@ -173,8 +173,9 @@ class favicon
         } 
     }
 
-    function check_domain($domain)
+    function check_domain($url)
     {
+        $domain = parse_url($url, PHP_URL_HOST);
         $domainParts = explode('.', $domain);
         if (count($domainParts) == 3 and $domainParts[0] != 'www') {
             // with Subdomain (if not www)
