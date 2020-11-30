@@ -60,6 +60,8 @@ class favicon
     {
         $retval = false;
         
+        if ($this->debug) error_log("<--- Favicon");
+
         // avoid script runtime timeout
         $max_execution_time = ini_get('max_execution_time');
         set_time_limit(0);  // 0 = no timelimit
@@ -244,16 +246,22 @@ class favicon
 
         // use curl or file_get_contents (both with user_agent) and fopen/fread as fallback
         if (function_exists('curl_version')) {
-
+            if ($this->debug) error_log("curl_version");
             $ch = curl_init($url);
-
             curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLINFO_HTTP_CODE, true);
             $content = curl_exec($ch);
+            if ($content === false) {
+                $curlerr = curl_error($ch);
+                $curlinfo = curl_getinfo($ch);
+                error_log("curl_exec request-error: $curlerr");
+                error_log("  URL: " . $curlinfo['url']);
+                error_log("  HTML-response: " . $curlinfo['http_code']);
+            }
             curl_close($ch);
-
             unset($ch);
 
         } else {
