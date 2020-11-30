@@ -30,7 +30,7 @@ if (basename($_SERVER['SCRIPT_NAME']) == basename (__FILE__)) {
 class favicon
 {
     /** @var Boolean Set to <code>true</code> to show debugging messages */
-    private $debug = false;
+    private $debug = true;
     /** @var String The directory where the favicon images are stored */
     private $favicon_dir = './favicons/';
 
@@ -76,7 +76,7 @@ class favicon
 
         if ($this->favicon_url) {
             // HTML data icon?
-            $data_pos = strpos($this->favicon_url, 'data:'); 
+            $data_pos = strpos($this->favicon_url, 'data:');
             if ($data_pos === false) {
                 if ($this->debug) error_log("Favicon URL found: $this->favicon_url");
                 // strip URL parameters, if any
@@ -129,7 +129,7 @@ class favicon
         }
 
         // if there is no match, try if there is a favicon in the root of the domain
-        if (empty($favicon)) { 
+        if (empty($favicon)) {
             $favicon = 'http://'.$domain.'/favicon.ico';
         }
 
@@ -145,7 +145,7 @@ class favicon
     /**
      Load the favicon using a public API.
 
-     @param $domain The domain 
+     @param $domain The domain
 
      @return $this->favicon_url
      */
@@ -172,7 +172,7 @@ class favicon
         if ($random == 3) {
             if ($this->debug) error_log('Google');
             $this->favicon_url = 'http://www.google.com/s2/favicons?domain='.$domain;
-        } 
+        }
     }
 
     function check_domain($url)
@@ -184,11 +184,9 @@ class favicon
             $domain = $domainParts[0].'.'.
                     $domainParts[count($domainParts)-2] . '.'.
                     $domainParts[count($domainParts)-1];
-
-        } else if (count($domainParts) >= 2) {
+        } elseif (count($domainParts) >= 2) {
             // without subdomain
             $domain = $domainParts[count($domainParts)-2] . '.' . $domainParts[count($domainParts)-1];
-
         } else {
             // without http(s)
             $domain = $url;
@@ -221,7 +219,7 @@ class favicon
         if (file_exists($this->icon_name)) {
             if ($this->debug) error_log('hash value exists');
             return true;
-        } else if ($fp = @fopen($this->icon_name, 'w')) {
+        } elseif ($fp = @fopen($this->icon_name, 'w')) {
             if ($this->debug) error_log("new hash value, fname: $this->icon_name");
             fwrite($fp, $image);
             fclose($fp);
@@ -263,16 +261,11 @@ class favicon
             }
             curl_close($ch);
             unset($ch);
-
         } else {
-
             $context = array('http' => array('user_agent' => $user_agent,));
             $context = stream_context_create($context);
-
             if (function_exists('file_get_contents')) {
-
                 $content = file_get_contents($url, null, $context);
-
             } else {
                 $fh = fopen($url, 'r', false, $context);
                 $content = '';
@@ -340,6 +333,3 @@ class favicon
         }
     }
 }
-
-?>
-
