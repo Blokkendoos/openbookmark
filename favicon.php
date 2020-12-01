@@ -135,7 +135,6 @@ class favicon
 
         // try to load favicon
         if (@getimagesize($favicon)) {
-            if ($this->debug) error_log("URL: $favicon");
             $this->favicon_url = $favicon;
         } else {
             $this->favicon_url = null;
@@ -244,11 +243,11 @@ class favicon
 
         // use curl or file_get_contents (both with user_agent) and fopen/fread as fallback
         if (function_exists('curl_version')) {
-            if ($this->debug) error_log("curl_version");
             $ch = curl_init($url);
             curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_FAILONERROR, true);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLINFO_HTTP_CODE, true);
             $content = curl_exec($ch);
@@ -256,8 +255,8 @@ class favicon
                 $curlerr = curl_error($ch);
                 $curlinfo = curl_getinfo($ch);
                 error_log("curl_exec request-error: $curlerr");
-                error_log("  URL: " . $curlinfo['url']);
                 error_log("  HTML-response: " . $curlinfo['http_code']);
+                error_log("  URL: " . substr($curlinfo['url'], 0, 64));
             }
             curl_close($ch);
             unset($ch);
