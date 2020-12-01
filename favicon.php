@@ -59,7 +59,7 @@ class favicon
     function get_favicon($url)
     {
         $retval = false;
-        
+
         if ($this->debug) error_log("<--- Favicon");
 
         // avoid script runtime timeout
@@ -101,7 +101,7 @@ class favicon
         }
         // restore script runtime timeout
         set_time_limit($max_execution_time);
-        
+
         return $retval;
     }
 
@@ -123,14 +123,14 @@ class favicon
             if (isset($matchTag[1]) and @preg_match($regExPattern, $matchTag[1], $matchUrl)) {
                 if (isset($matchUrl[2])) {
                     // Build Favicon Link
-                    $favicon = $this->rel2abs(trim($matchUrl[2]), 'http://'.$domain.'/');
+                    $favicon = $this->rel2abs(trim($matchUrl[2]), 'http://' . $domain . '/');
                 }
             }
         }
 
         // if there is no match, try if there is a favicon in the root of the domain
         if (empty($favicon)) {
-            $favicon = 'http://'.$domain.'/favicon.ico';
+            $favicon = 'http://' . $domain . '/favicon.ico';
         }
 
         // try to load favicon
@@ -156,13 +156,13 @@ class favicon
         // Faviconkit
         if ($random == 1) {
             if ($this->debug) error_log('FaviconKit');
-            $this->favicon_url = 'https://api.faviconkit.com/'.$domain.'/16';
+            $this->favicon_url = 'https://api.faviconkit.com/' . $domain . '/16';
         }
 
         // Favicongrabber
         if ($random == 2) {
             if ($this->debug) error_log('FaviconGrabber');
-            $echo = json_decode($this->load('http://favicongrabber.com/api/grab/'.$domain), true);
+            $echo = json_decode($this->load('http://favicongrabber.com/api/grab/' . $domain), true);
             // Get Favicon URL from Array out of json data (@ if something went wrong)
             $this->favicon_url = @$echo['icons']['0']['src'];
         }
@@ -170,7 +170,7 @@ class favicon
         // Google (check also md5() later)
         if ($random == 3) {
             if ($this->debug) error_log('Google');
-            $this->favicon_url = 'http://www.google.com/s2/favicons?domain='.$domain;
+            $this->favicon_url = 'http://www.google.com/s2/favicons?domain=' . $domain;
         }
     }
 
@@ -180,12 +180,12 @@ class favicon
         $domainParts = explode('.', $domain);
         if (count($domainParts) == 3 and $domainParts[0] != 'www') {
             // with Subdomain (if not www)
-            $domain = $domainParts[0].'.'.
-                    $domainParts[count($domainParts)-2] . '.'.
-                    $domainParts[count($domainParts)-1];
+            $domain = $domainParts[0] . '.' .
+                    $domainParts[count($domainParts) - 2] . '.' .
+                    $domainParts[count($domainParts) - 1];
         } elseif (count($domainParts) >= 2) {
             // without subdomain
-            $domain = $domainParts[count($domainParts)-2] . '.' . $domainParts[count($domainParts)-1];
+            $domain = $domainParts[count($domainParts) - 2] . '.' . $domainParts[count($domainParts) - 1];
         } else {
             // without http(s)
             $domain = $url;
@@ -234,7 +234,7 @@ class favicon
 
      @param $url the URL
 
-     @return the content
+     @return HTML content
      */
     function load($url)
     {
