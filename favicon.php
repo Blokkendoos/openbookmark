@@ -239,29 +239,31 @@ class favicon
     function load($url)
     {
         // use an agent that is likely to be accepted by the host
-        $user_agent = 'Mozilla/5.0 (Windows NT 5.1; rv:31.0) Gecko/20100101 Firefox/31.0';
+        $agent = 'Mozilla/5.0 (Windows NT 5.1; rv:31.0) Gecko/20100101 Firefox/31.0';
 
         // use curl or file_get_contents (both with user_agent) and fopen/fread as fallback
         if (function_exists('curl_version')) {
             $ch = curl_init($url);
-            curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
+            curl_setopt($ch, CURLOPT_USERAGENT, $agent);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($ch, CURLOPT_FAILONERROR, true);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLINFO_HTTP_CODE, true);
             $content = curl_exec($ch);
+            $curlerr = curl_error($ch);
+            curl_close($ch);
+            unset($ch);
             if ($content === false) {
-                $curlerr = curl_error($ch);
-                $curlinfo = curl_getinfo($ch);
                 error_log("curl_exec request-error: $curlerr");
-                error_log("  HTML-response: " . $curlinfo['http_code']);
-                error_log("  URL: " . substr($curlinfo['url'], 0, 64));
+                $content = $this->load_alt($url, $agent);
             }
             curl_close($ch);
             unset($ch);
         } else {
-            $context = array('http' => array('user_agent' => $user_agent,));
+            $content = $this->load_alt($url, $agent);
+
+            $context = array('http' => array('user_agent' => $agent,));
             $context = stream_context_create($context);
             if (function_exists('file_get_contents')) {
                 $content = file_get_contents($url, null, $context);
@@ -273,6 +275,33 @@ class favicon
                 }
                 fclose($fh);
             }
+        }
+        return $content;
+    }
+
+    /**
+     Load the page with the given URL.
+     Alternative load-function when curl_exec failed or is not available.
+
+     @param $url   the URL
+     @param $agent user-agent
+
+     @return HTML content
+     */
+    function load_alt($url, $agent)
+    {
+        // use curl or file_get_contents (both with user_agent) and fopen/fread as fallback
+        $context = array('http' => array('user_agent' => $agent,));
+        $context = stream_context_create($context);
+        if (function_exists('file_get_contents')) {
+            $content = file_get_contents($url, null, $context);
+        } else {
+            $fh = fopen($url, 'r', false, $context);
+            $content = '';
+            while (!feof($fh)) {
+                $content .= fread($fh, 128); // because filesize() will not work on URLS?
+            }
+            fclose($fh);
         }
         return $content;
     }
