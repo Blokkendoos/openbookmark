@@ -249,7 +249,6 @@ class favicon
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($ch, CURLOPT_FAILONERROR, true);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLINFO_HTTP_CODE, true);
             $content = curl_exec($ch);
             $curlerr = curl_error($ch);
             curl_close($ch);
