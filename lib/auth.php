@@ -57,11 +57,26 @@ class auth {
 				if (isset ($_POST['remember'])) {
 					global $cookie;
 					$cookie['data'] = serialize (array ($this->username, md5 ($cookie['seed'] . md5 ($this->password))));
+					//https://stackoverflow.com/questions/39750906/php-setcookie-samesite-strict
+					if (PHP_VERSION_ID < 70300) {
 					@setcookie ($cookie['name'],
 								$cookie['data'],
 								$cookie['expire'],
 								$cookie['path'],
 								$cookie['domain']);
+					} else {
+					$options = array (
+							'expires' => $cookie['expire'],
+							'path' => $cookie['path'],
+							'domain' => $cookie['domain'],
+							'secure' => 'true',
+							'httponly' => 'true',
+							'samesite' => 'Strict' // None | Lax | Strict
+							);
+					@setcookie ($cookie['name'],
+								$cookie['data'],
+								$options);
+					}
 				}
 				$this->set_login_data ($this->username);
 			}

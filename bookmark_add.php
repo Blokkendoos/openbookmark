@@ -1,3 +1,3 @@
 <?php
-include ('./bookmark_new.php');
-?>
+
+include('./bookmark_new.php');

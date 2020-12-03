@@ -1,4 +1,5 @@
 <?php
+
 /**
  * The MIT License (MIT)
  * Copyright (c) 2015 FlyingTopHat (lucas@flyingtophat.co.uk)
@@ -34,19 +35,19 @@ class DataUri
 {
     /** @var Regular expression used for decomposition of data URI scheme */
     private static $REGEX_URI = '/^data:(.+?){0,1}(?:(?:;(base64)\,){1}|\,)(.+){0,1}$/';
-    
+
     const DEFAULT_TYPE = 'text/plain;charset=US-ASCII';
-    
+
     const ENCODING_URL_ENCODED_OCTETS = 0;
     const ENCODING_BASE64 = 1;
-    
+
     /** @var Keyword used in the data URI to signify base64 encoding */
     const BASE64_KEYWORD = 'base64';
-    
+
     private $mediaType;
     private $encoding;
     private $encodedData;
-    
+
     /**
      * Instantiates an instance of the DataURI class, initialised with the
      * default values defined in RFC 2397. That is the media-type of
@@ -85,7 +86,7 @@ class DataUri
             ? $this->mediaType
             : DataUri::DEFAULT_TYPE;
     }
-    
+
     /**
      * Sets the media-type.
      *
@@ -95,7 +96,7 @@ class DataUri
     {
         $this->mediaType = $mediaType;
     }
-    
+
     /**
      * Returns the method of encoding used for the data.
      *
@@ -117,7 +118,7 @@ class DataUri
     {
         return $this->encodedData;
     }
-    
+
     /**
      * Sets the encoded data and the encoding scheme used to encode/decode it.
      * Be aware that the data is not validated, so ensure that the correct
@@ -133,15 +134,17 @@ class DataUri
      */
     public function setEncodedData($encoding, $data)
     {
-        if (($encoding !== DataUri::ENCODING_URL_ENCODED_OCTETS) &&
-            ($encoding !== DataUri::ENCODING_BASE64)) {
+        if (
+            ($encoding !== DataUri::ENCODING_URL_ENCODED_OCTETS) &&
+            ($encoding !== DataUri::ENCODING_BASE64)
+        ) {
             throw new InvalidArgumentException('Unsupported encoding scheme');
         }
         $this->encoding = $encoding;
         $this->encodedData = $data;
     }
-    
-    
+
+
     /**
      * Sets the data for the data URI, which it stores in encoded form using
      * the encoding scheme provided.
@@ -169,7 +172,7 @@ class DataUri
                 break;
         }
     }
-    
+
     /**
      * Tries to decode the URI's data using the encoding scheme set.
      *
@@ -181,7 +184,7 @@ class DataUri
     public function tryDecodeData(&$decodedData)
     {
         $hasOutput = false;
-        
+
         switch ($this->getEncoding()) {
             case DataUri::ENCODING_URL_ENCODED_OCTETS:
                 $decodedData = rawurldecode($this->getEncodedData());
@@ -202,7 +205,7 @@ class DataUri
 
         return $hasOutput;
     }
-    
+
     /**
      * Generates a data URI string representation of the object.
      *
@@ -211,25 +214,27 @@ class DataUri
     public function toString()
     {
         $output = 'data:';
-        
-        if (($this->getMediaType() !== DataUri::DEFAULT_TYPE) ||
-            ($this->getEncoding() !== DataUri::ENCODING_URL_ENCODED_OCTETS)) {
+
+        if (
+            ($this->getMediaType() !== DataUri::DEFAULT_TYPE) ||
+            ($this->getEncoding() !== DataUri::ENCODING_URL_ENCODED_OCTETS)
+        ) {
             $output .= $this->getMediaType();
 
             if ($this->getEncoding() === DataUri::ENCODING_BASE64) {
-                $output .= ';'.DataUri::BASE64_KEYWORD;
+                $output .= ';' . DataUri::BASE64_KEYWORD;
             }
         }
 
-        $output .= ','.$this->getEncodedData();
+        $output .= ',' . $this->getEncodedData();
         return $output;
     }
-    
+
     public function __toString()
     {
         return $this->toString();
     }
-    
+
     /**
      * Determines whether a string is data URI with the components necessary for
      * it to be parsed by the {@link DataUri::tryParse($s, &$out)} method.
@@ -243,7 +248,7 @@ class DataUri
     {
         return (preg_match(DataUri::$REGEX_URI, $dataUriString) === 1);
     }
-    
+
     /**
      * Parses a string data URI into an instance of a DataUri object.
      *
@@ -255,15 +260,17 @@ class DataUri
     public static function tryParse($dataUriString, &$out)
     {
         $hasOutput = false;
-        
+
         if (DataUri::isParsable($dataUriString)) {
             $matches = null;
-            if (preg_match_all(
-                DataUri::$REGEX_URI,
-                $dataUriString,
-                $matches,
-                PREG_SET_ORDER
-            ) !== false) {
+            if (
+                preg_match_all(
+                    DataUri::$REGEX_URI,
+                    $dataUriString,
+                    $matches,
+                    PREG_SET_ORDER
+                ) !== false
+            ) {
                 $mediatype = isset($matches[0][1])
                     ? $matches[0][1]
                     : DataUri::DEFAULT_TYPE;

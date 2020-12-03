@@ -1,4 +1,5 @@
 <?php
+
 /**
  PHP Grab favicon
 
@@ -11,7 +12,7 @@
  @link      https://github.com/blokkendoos/openbookmark
  */
 
-if (basename($_SERVER['SCRIPT_NAME']) == basename (__FILE__)) {
+if (basename($_SERVER['SCRIPT_NAME']) == basename(__FILE__)) {
     die('no direct access allowed');
 }
 
@@ -60,7 +61,9 @@ class favicon
     {
         $retval = false;
 
-        if ($this->debug) error_log("<--- Favicon");
+        if ($this->debug) {
+            error_log("<--- Favicon");
+        }
 
         // avoid script runtime timeout
         $max_execution_time = ini_get('max_execution_time');
@@ -81,10 +84,14 @@ class favicon
         // HTML data icon?
         $data_pos = strpos($this->favicon_url, 'data:');
         if ($data_pos === false) {
-            if ($this->debug) error_log("Favicon URL found: $this->favicon_url");
+            if ($this->debug) {
+                error_log("Favicon URL found: $this->favicon_url");
+            }
             $retval = $this->get_favicon_image();
         } else {
-            if ($this->debug) error_log('Data URI found');
+            if ($this->debug) {
+                error_log('Data URI found');
+            }
             include_once ABSOLUTE_PATH . 'DataUri.php';
             $data_uri = null;
             if (DataUri::tryParse($this->favicon_url, $data_uri)) {
@@ -113,16 +120,20 @@ class favicon
     function get_favicon_url($url, $domain)
     {
         $html = $this->load($url);
-        if (@preg_match(
-            '/((<link[^>]+rel=.(icon|shortcut icon|alternate icon)[^>]+>))/i',
-            $html,
-            $matchTag)
+        if (
+            @preg_match(
+                '/((<link[^>]+rel=.(icon|shortcut icon|alternate icon)[^>]+>))/i',
+                $html,
+                $matchTag
+            )
         ) {
-            $regExPattern = ;
-            if (isset($matchTag[1]) and
-                @preg_match('/href=(\'|\")(.*?)\1/i',
-                            $matchTag[1],
-                            $matchUrl)
+            if (
+                isset($matchTag[1]) and
+                @preg_match(
+                    '/href=(\'|\")(.*?)\1/i',
+                    $matchTag[1],
+                    $matchUrl
+                )
             ) {
                 if (isset($matchUrl[2])) {
                     // Build Favicon Link
@@ -146,13 +157,17 @@ class favicon
 
         // Faviconkit
         if ($random == 1) {
-            if ($this->debug) error_log('FaviconKit');
+            if ($this->debug) {
+                error_log('FaviconKit');
+            }
             $this->favicon_url = 'https://api.faviconkit.com/' . $domain . '/16';
         }
 
         // Favicongrabber
         if ($random == 2) {
-            if ($this->debug) error_log('FaviconGrabber');
+            if ($this->debug) {
+                error_log('FaviconGrabber');
+            }
             $echo = json_decode($this->load('http://favicongrabber.com/api/grab/' . $domain), true);
             // Get Favicon URL from Array out of json data (@ if something went wrong)
             $this->favicon_url = @$echo['icons']['0']['src'];
@@ -160,7 +175,9 @@ class favicon
 
         // Google (check also md5() later)
         if ($random == 3) {
-            if ($this->debug) error_log('Google');
+            if ($this->debug) {
+                error_log('Google');
+            }
             $this->favicon_url = 'http://www.google.com/s2/favicons?domain=' . $domain;
         }
     }
@@ -207,15 +224,21 @@ class favicon
         $this->icon_name = $this->favicon_dir . hash('sha1', $image) . '.ico';
 
         if (file_exists($this->icon_name)) {
-            if ($this->debug) error_log('hash value exists');
+            if ($this->debug) {
+                error_log('hash value exists');
+            }
             return true;
         } elseif ($fp = @fopen($this->icon_name, 'w')) {
-            if ($this->debug) error_log("new hash value, fname: $this->icon_name");
+            if ($this->debug) {
+                error_log("new hash value, fname: $this->icon_name");
+            }
             fwrite($fp, $image);
             fclose($fp);
             return true;
         } else {
-            if ($this->debug) error_log("favicon not found, URL: $this->favicon_url");
+            if ($this->debug) {
+                error_log("favicon not found, URL: $this->favicon_url");
+            }
             return false;
         }
     }
@@ -293,12 +316,20 @@ class favicon
     {
         extract(parse_url($base));
 
-        if (strpos($rel, '//') === 0) return $scheme . ':' . $rel;
-        if (parse_url($rel, PHP_URL_SCHEME) != '') return $rel;
-        if ($rel[0] == '#' or $rel[0] == '?') return $base . $rel;
+        if (strpos($rel, '//') === 0) {
+            return $scheme . ':' . $rel;
+        }
+        if (parse_url($rel, PHP_URL_SCHEME) != '') {
+            return $rel;
+        }
+        if ($rel[0] == '#' or $rel[0] == '?') {
+            return $base . $rel;
+        }
 
         $path = preg_replace('#/[^/]*$#', '', $path);
-        if ($rel[0] == '/') $path = '';
+        if ($rel[0] == '/') {
+            $path = '';
+        }
 
         $abs = $host . $path . '/' . $rel;
         $abs = preg_replace('/(\/\.?\/)/', '/', $abs);

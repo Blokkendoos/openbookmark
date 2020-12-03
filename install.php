@@ -1,7 +1,7 @@
 <?php
-define ("ABSOLUTE_PATH", dirname (__FILE__) . "/");
-require_once (ABSOLUTE_PATH . "lib/webstart.php");
-require_once (ABSOLUTE_PATH . "lib/lib.php");
+define("ABSOLUTE_PATH", dirname(__FILE__) . "/");
+require_once(ABSOLUTE_PATH . "lib/webstart.php");
+require_once(ABSOLUTE_PATH . "lib/lib.php");
 
 global $dbh;
 $dbh = null;
@@ -9,41 +9,42 @@ $dbh = null;
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-	<head>
-		<title>OpenBookmark</title>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	</head>
+    <head>
+        <title>OpenBookmark</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    </head>
 <body>
 
 <?php
 
-$mysql_hostname = set_post_string_var ('mysql_hostname', 'localhost');
-$mysql_db_name = set_post_string_var ('mysql_db_name', 'bookmarks');
-$mysql_db_username = set_post_string_var ('mysql_db_username', 'bookmarkmgr');
-$mysql_db_password = set_post_string_var ('mysql_db_password');
-$mysql_db_create = set_post_bool_var ('mysql_db_create', false);
-$mysql_db_su_username = set_post_string_var ('mysql_db_su_username', 'root');
-$mysql_db_su_password = set_post_string_var ('mysql_db_su_password');
+$mysql_hostname = set_post_string_var('mysql_hostname', 'localhost');
+$mysql_db_name = set_post_string_var('mysql_db_name', 'bookmarks');
+$mysql_db_username = set_post_string_var('mysql_db_username', 'bookmarkmgr');
+$mysql_db_password = set_post_string_var('mysql_db_password');
+$mysql_db_create = set_post_bool_var('mysql_db_create', false);
+$mysql_db_su_username = set_post_string_var('mysql_db_su_username', 'root');
+$mysql_db_su_password = set_post_string_var('mysql_db_su_password');
 
-$cookie_name = set_post_string_var ('cookie_name', 'ob_cookie');
-$cookie_domain = set_post_string_var ('cookie_domain', '');
-$cookie_path = set_post_string_var ('cookie_path', '/');
-$cookie_seed = set_post_string_var ('cookie_seed', random_string ());
-$cookie_expire = set_post_string_var ('cookie_expire', '31536000');
+$cookie_name = set_post_string_var('cookie_name', 'ob_cookie');
+$cookie_domain = set_post_string_var('cookie_domain', '');
+$cookie_path = set_post_string_var('cookie_path', '/');
+$cookie_seed = set_post_string_var('cookie_seed', random_string());
+$cookie_expire = set_post_string_var('cookie_expire', '31536000');
 
-$submit = set_post_bool_var ('submit', false);
+$submit = set_post_bool_var('submit', false);
 
 $admin_message = '';
 
 if (intval(str_replace('.', '', phpversion())) < 500) {
-	print_msg ('You are running PHP version '.PHP_VERSION.'. This requires at least PHP 5.2.0 + MySQL 5 to run properly. You must upgrade your PHP installation before you can continue.', "error");
+    print_msg('You are running PHP version ' . PHP_VERSION . '. This requires at least PHP 5.2.0 + MySQL 5 to run properly. You must upgrade your PHP installation before you can continue.', "error");
 }
 
 ############## database control ##############
 
-function create_table_bookmark () {
-	global $dbh;
-	$query = "CREATE TABLE bookmark (
+function create_table_bookmark()
+{
+    global $dbh;
+    $query = "CREATE TABLE bookmark (
 		user char(20) NOT NULL default '',
 		title char(70) NOT NULL default '',
 		url char(200) NOT NULL default '',
@@ -59,17 +60,17 @@ function create_table_bookmark () {
 		FULLTEXT KEY title (title,url,description)
 	) ENGINE=MyISAM";
 
-	if (mysqli_query ($dbh, $query)) {
-		return true;
-	}
-	else {
-		return false;
-	}
+    if (mysqli_query($dbh, $query)) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
-function create_table_folder () {
-	global $dbh;
-	$query = "CREATE TABLE folder (
+function create_table_folder()
+{
+    global $dbh;
+    $query = "CREATE TABLE folder (
 			id int(11) NOT NULL auto_increment,
 			childof int(11) NOT NULL default '0',
 			name char(70) NOT NULL default '',
@@ -79,17 +80,17 @@ function create_table_folder () {
 			UNIQUE KEY id (id)
 		) ENGINE=MyISAM;";
 
-	if (mysqli_query ($dbh, $query)) {
-		return true;
-	}
-	else {
-		return false;
-	}
+    if (mysqli_query($dbh, $query)) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
-function create_table_user () {
-	global $dbh;
-	$query = "CREATE TABLE user (
+function create_table_user()
+{
+    global $dbh;
+    $query = "CREATE TABLE user (
 			username char(50) NOT NULL default '',
 			password char(50) NOT NULL default '',
 			theme varchar(50) NOT NULL default '',
@@ -116,343 +117,328 @@ function create_table_user () {
 			UNIQUE KEY id (username)
 		) ENGINE=MyISAM;";
 
-	if (mysqli_query ($dbh, $query)) {
-		return true;
-	}
-	else {
-		return false;
-	}
+    if (mysqli_query($dbh, $query)) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
-function create_admin_user () {
-	global $dbh;
-	$query = "INSERT INTO user (username, password, admin)
+function create_admin_user()
+{
+    global $dbh;
+    $query = "INSERT INTO user (username, password, admin)
 			  VALUES ('admin', MD5('admin'), '1');";
 
-	if (mysqli_query ($dbh, $query)) {
-		return true;
-	}
-	else {
-		return false;
-	}
+    if (mysqli_query($dbh, $query)) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
-function random_string ($max = 14){
-	$chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
-	$string = '';
-	for($i = 0; $i < $max; $i++){
-		$rand_key = mt_rand (0, strlen($chars));
-		$string  .= substr ($chars, $rand_key, 1);
-	}
-	return str_shuffle ($string);
+function random_string($max = 14)
+{
+    $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
+    $string = '';
+    for ($i = 0; $i < $max; $i++) {
+        $rand_key = mt_rand(0, strlen($chars));
+        $string  .= substr($chars, $rand_key, 1);
+    }
+    return str_shuffle($string);
 }
 
-function print_msg ($message, $type = "") {
-	if ($type == "success") {
-		$color = "green";
-	}
-	else if ($type == "error") {
-		$color = "red";
-	}
-	else if ($type == "notice") {
-		$color = "orange";
-	}
-	else {
-		$color = "black";
-	}
-	echo '<div style="font:bold 12pt Times; color: ' . $color . '">' . $message . '</div>' . "\n";
+function print_msg($message, $type = "")
+{
+    if ($type == "success") {
+        $color = "green";
+    } elseif ($type == "error") {
+        $color = "red";
+    } elseif ($type == "notice") {
+        $color = "orange";
+    } else {
+        $color = "black";
+    }
+    echo '<div style="font:bold 12pt Times; color: ' . $color . '">' . $message . '</div>' . "\n";
 }
 
-function check_table_version ($table, $field) {
-	$query = "DESC $table";
-	$return = false;
-	if ($result = mysqli_query ($dbh, $query)) {
-		while ($row = mysqli_fetch_row ($result)) {
-			if ($row[0] == $field) {
-				$return = true;
-				break;
-			}
-		}
-	}
-	return $return;
+function check_table_version($table, $field)
+{
+    $query = "DESC $table";
+    $return = false;
+    if ($result = mysqli_query($dbh, $query)) {
+        while ($row = mysqli_fetch_row($result)) {
+            if ($row[0] == $field) {
+                $return = true;
+                break;
+            }
+        }
+    }
+    return $return;
 }
 
-function upgrade_table ($table, $field, $query) {
-	if (check_table_version ($table, $field)) {
-		print_msg ("Table $table contains '$field' field, good.", "success");
-	}
-	else {
-		print_msg ("Table $table does not contain $field field, attempting to upgrade", "notice");
-		if (mysqli_query ($dbh, $query)) {
-			print_msg ("Table $table altered, $field added.", "success");
-		}
-		else {
-			print_msg ("Failure! Table $table not changed.", "error");
-		}
-	}
+function upgrade_table($table, $field, $query)
+{
+    if (check_table_version($table, $field)) {
+        print_msg("Table $table contains '$field' field, good.", "success");
+    } else {
+        print_msg("Table $table does not contain $field field, attempting to upgrade", "notice");
+        if (mysqli_query($dbh, $query)) {
+            print_msg("Table $table altered, $field added.", "success");
+        } else {
+            print_msg("Failure! Table $table not changed.", "error");
+        }
+    }
 }
 
 
 ############## html stuff ##############
 
-function html_db () {
-	global $mysql_hostname,
-	       $mysql_db_name,
-	       $mysql_db_username,
-	       $mysql_db_su_username,
-	       $cookie_name,
-	       $cookie_domain,
-	       $cookie_path,
-	       $cookie_seed,
-	       $cookie_expire;
-	?>
+function html_db()
+{
+    global $mysql_hostname,
+           $mysql_db_name,
+           $mysql_db_username,
+           $mysql_db_su_username,
+           $cookie_name,
+           $cookie_domain,
+           $cookie_path,
+           $cookie_seed,
+           $cookie_expire;
+    ?>
 
-	<h3>Database connection:</h3>
+    <h3>Database connection:</h3>
 
-	<form method="POST" action="<?php echo $_SERVER['SCRIPT_NAME']; ?>">
-	<table>
-		<tr>
-			<td>Database hostname:</td>
-			<td><input type="text" name="mysql_hostname" value="<?php echo $mysql_hostname; ?>"></td>
-			<td></td>
-		</tr>
+    <form method="POST" action="<?php echo $_SERVER['SCRIPT_NAME']; ?>">
+    <table>
+        <tr>
+            <td>Database hostname:</td>
+            <td><input type="text" name="mysql_hostname" value="<?php echo $mysql_hostname; ?>"></td>
+            <td></td>
+        </tr>
 
-		<tr>
-			<td>Database name:</td>
-			<td><input type="text" name="mysql_db_name" value="<?php echo $mysql_db_name; ?>"></td>
-			<td></td>
-		</tr>
+        <tr>
+            <td>Database name:</td>
+            <td><input type="text" name="mysql_db_name" value="<?php echo $mysql_db_name; ?>"></td>
+            <td></td>
+        </tr>
 
-		<tr>
-			<td>Database username:</td>
-			<td><input type="text" name="mysql_db_username" value="<?php echo $mysql_db_username; ?>"></td>
-			<td></td>
-		</tr>
+        <tr>
+            <td>Database username:</td>
+            <td><input type="text" name="mysql_db_username" value="<?php echo $mysql_db_username; ?>"></td>
+            <td></td>
+        </tr>
 
-		<tr>
-			<td>Database password:</td>
-			<td><input type="password" name="mysql_db_password" value=""></td>
-			<td></td>
-		</tr>
+        <tr>
+            <td>Database password:</td>
+            <td><input type="password" name="mysql_db_password" value=""></td>
+            <td></td>
+        </tr>
 
-		<tr>
-			<td>Create new database:</td>
-			<td><input type="checkbox" name="mysql_db_create"></td>
-			<td></td>
-		</tr>
+        <tr>
+            <td>Create new database:</td>
+            <td><input type="checkbox" name="mysql_db_create"></td>
+            <td></td>
+        </tr>
 
-		<tr>
-			<td>using Superuser account:</td>
-			<td><input type="text" name="mysql_db_su_username" value="<?php echo $mysql_db_su_username; ?>"></td>
-			<td></td>
-		</tr>
+        <tr>
+            <td>using Superuser account:</td>
+            <td><input type="text" name="mysql_db_su_username" value="<?php echo $mysql_db_su_username; ?>"></td>
+            <td></td>
+        </tr>
 
-		<tr>
-			<td>Superuser password:</td>
-			<td><input type="password" name="mysql_db_su_password" value=""></td>
-			<td></td>
-		</tr>
+        <tr>
+            <td>Superuser password:</td>
+            <td><input type="password" name="mysql_db_su_password" value=""></td>
+            <td></td>
+        </tr>
 
-		<tr>
-			<td><h3>Cookie settings:</h3></td>
-			<td></td>
-			<td></td>
-		</tr>
+        <tr>
+            <td><h3>Cookie settings:</h3></td>
+            <td></td>
+            <td></td>
+        </tr>
 
-		<tr>
-			<td>Cookie name:</td>
-			<td><input type="text" name="cookie_name" value="<?php echo $cookie_name; ?>"></td>
-			<td></td>
-		</tr>
+        <tr>
+            <td>Cookie name:</td>
+            <td><input type="text" name="cookie_name" value="<?php echo $cookie_name; ?>"></td>
+            <td></td>
+        </tr>
 
-		<tr>
-			<td>Cookie domain:</td>
-			<td><input type="text" name="cookie_domain" value="<?php echo $cookie_domain; ?>"></td>
-			<td></td>
-		</tr>
+        <tr>
+            <td>Cookie domain:</td>
+            <td><input type="text" name="cookie_domain" value="<?php echo $cookie_domain; ?>"></td>
+            <td></td>
+        </tr>
 
-		<tr>
-			<td>Cookie path:</td>
-			<td><input type="text" name="cookie_path" value="<?php echo $cookie_path; ?>"></td>
-			<td></td>
-		</tr>
+        <tr>
+            <td>Cookie path:</td>
+            <td><input type="text" name="cookie_path" value="<?php echo $cookie_path; ?>"></td>
+            <td></td>
+        </tr>
 
-		<tr>
-			<td>Cookie seed:</td>
-			<td><input type="text" name="cookie_seed" value="<?php echo $cookie_seed; ?>"></td>
-			<td>Just some random junk.</td>
-		</tr>
+        <tr>
+            <td>Cookie seed:</td>
+            <td><input type="text" name="cookie_seed" value="<?php echo $cookie_seed; ?>"></td>
+            <td>Just some random junk.</td>
+        </tr>
 
-		<tr>
-			<td>Cookie expire:</td>
-			<td><input type="text" name="cookie_expire" value="<?php echo $cookie_expire; ?>"></td>
-			<td>Set an amount of seconds when the cookie will expire.</td>
-		</tr>
+        <tr>
+            <td>Cookie expire:</td>
+            <td><input type="text" name="cookie_expire" value="<?php echo $cookie_expire; ?>"></td>
+            <td>Set an amount of seconds when the cookie will expire.</td>
+        </tr>
 
-		<tr>
-			<td></td>
-			<td><input type="submit" name="submit"></td>
-			<td></td>
-		</tr>
-	</table>
-	</form>
+        <tr>
+            <td></td>
+            <td><input type="submit" name="submit"></td>
+            <td></td>
+        </tr>
+    </table>
+    </form>
 
-	<?php
+    <?php
 }
 
 if ($submit) {
-	if ($mysql_db_create) {
-		if (! $dbh = mysqli_connect ($mysql_hostname, $mysql_db_su_username, $mysql_db_su_password)) {
-			html_db ();
-			print_msg (mysqli_error ($dbh), "error");
-			require_once (ABSOLUTE_PATH . "footer.php");
-		}
-		else {
-			if (mysqli_query ($dbh, "CREATE DATABASE $mysql_db_name")) {
-				print_msg ("Database $mysql_db_name created", "success");
-			}
-			else {
-				html_db();
-				print_msg(mysqli_error ($dbh), "error");
-				require_once (ABSOLUTE_PATH . "footer.php");
-			}
+    if ($mysql_db_create) {
+        if (! $dbh = mysqli_connect($mysql_hostname, $mysql_db_su_username, $mysql_db_su_password)) {
+            html_db();
+            print_msg(mysqli_error($dbh), "error");
+            require_once(ABSOLUTE_PATH . "footer.php");
+        } else {
+            if (mysqli_query($dbh, "CREATE DATABASE $mysql_db_name")) {
+                print_msg("Database $mysql_db_name created", "success");
+            } else {
+                html_db();
+                print_msg(mysqli_error($dbh), "error");
+                require_once(ABSOLUTE_PATH . "footer.php");
+            }
 
-			if (mysqli_query ($dbh, "GRANT ALL PRIVILEGES ON $mysql_db_name.* TO '$mysql_db_username'@'$mysql_hostname' IDENTIFIED BY '$mysql_db_password'")) {
-				print_msg ("User $mysql_db_username created", "success");
-			}
-			else {
-				html_db ();
-				print_msg (mysqli_error ($dbh), "error");
-				require_once (ABSOLUTE_PATH . "footer.php");
-			}
-		}
-	}
+            if (mysqli_query($dbh, "GRANT ALL PRIVILEGES ON $mysql_db_name.* TO '$mysql_db_username'@'$mysql_hostname' IDENTIFIED BY '$mysql_db_password'")) {
+                print_msg("User $mysql_db_username created", "success");
+            } else {
+                html_db();
+                print_msg(mysqli_error($dbh), "error");
+                require_once(ABSOLUTE_PATH . "footer.php");
+            }
+        }
+    }
 
-	$dsn = array(
-		'db_username' => $mysql_db_username,
-		'db_password' => $mysql_db_password,
-		'db_hostname' => $mysql_hostname,
-		'db_name'     => $mysql_db_name,
-	);
+    $dsn = array(
+        'db_username' => $mysql_db_username,
+        'db_password' => $mysql_db_password,
+        'db_hostname' => $mysql_hostname,
+        'db_name'     => $mysql_db_name,
+    );
 
-	if (! $dbh = mysqli_connect ($dsn['db_hostname'], $dsn['db_username'], $dsn['db_password'])) {
-		html_db ();
-		print_msg (mysqli_error ($dbh), "error");
-	}
-	else {
-		if (! mysqli_select_db ($dbh, $dsn['db_name'])) {
-			html_db ();
-			print_msg (mysqli_error ($dbh), "error");
-		}
-		else {
-			############## DB support ##############
-			print_msg ("DB connection succeeded", "success");
+    if (! $dbh = mysqli_connect($dsn['db_hostname'], $dsn['db_username'], $dsn['db_password'])) {
+        html_db();
+        print_msg(mysqli_error($dbh), "error");
+    } else {
+        if (! mysqli_select_db($dbh, $dsn['db_name'])) {
+            html_db();
+            print_msg(mysqli_error($dbh), "error");
+        } else {
+            ############## DB support ##############
+            print_msg("DB connection succeeded", "success");
 
-			$query = "SHOW TABLES";
-			$tables = array ();
-			$result = mysqli_query ($dbh, $query);
+            $query = "SHOW TABLES";
+            $tables = array ();
+            $result = mysqli_query($dbh, $query);
 
-			while ($row = mysqli_fetch_row ($result)) {
-				array_push ($tables, $row[0]);
-			}
+            while ($row = mysqli_fetch_row($result)) {
+                array_push($tables, $row[0]);
+            }
 
-			# the bookmark table
-			if (!in_array ("bookmark", $tables)) {
-				if (create_table_bookmark ()) {
-					print_msg ("Table bookmark created", "success");
-				}
-				else {
-					print_msg (mysqli_error ($dbh), "error");
-				}
-			}
-			else {
-				print_msg ("Table bookmark exists, checking for version:", "notice");
+            # the bookmark table
+            if (!in_array("bookmark", $tables)) {
+                if (create_table_bookmark()) {
+                    print_msg("Table bookmark created", "success");
+                } else {
+                    print_msg(mysqli_error($dbh), "error");
+                }
+            } else {
+                print_msg("Table bookmark exists, checking for version:", "notice");
 
-				# check for favicon support
-				upgrade_table ("bookmark", "favicon", "ALTER TABLE bookmark ADD COLUMN favicon varchar(200)");
+                # check for favicon support
+                upgrade_table("bookmark", "favicon", "ALTER TABLE bookmark ADD COLUMN favicon varchar(200)");
 
-				# check for public field in table
-				upgrade_table ("bookmark", "public", "ALTER TABLE bookmark ADD COLUMN public ENUM('0','1') DEFAULT 0 NOT NULL");
-			}
+                # check for public field in table
+                upgrade_table("bookmark", "public", "ALTER TABLE bookmark ADD COLUMN public ENUM('0','1') DEFAULT 0 NOT NULL");
+            }
 
-			# the folder table
-			if (!in_array ("folder", $tables)) {
-				if (create_table_folder ()) {
-					print_msg ("Table folder created", "success");
-				}
-				else {
-					print_msg (mysqli_error ($dbh), "error");
-				}
-			}
-			else {
-				print_msg ("Table folder exists, checking for version:", "notice");
+            # the folder table
+            if (!in_array("folder", $tables)) {
+                if (create_table_folder()) {
+                    print_msg("Table folder created", "success");
+                } else {
+                    print_msg(mysqli_error($dbh), "error");
+                }
+            } else {
+                print_msg("Table folder exists, checking for version:", "notice");
 
-				# check for public field in table
-				upgrade_table ("folder", "public", "ALTER TABLE folder ADD COLUMN public ENUM('0','1') DEFAULT 0 NOT NULL");
-			}
+                # check for public field in table
+                upgrade_table("folder", "public", "ALTER TABLE folder ADD COLUMN public ENUM('0','1') DEFAULT 0 NOT NULL");
+            }
 
 
 
-			# the user table
-			if (!in_array ("user", $tables)) {
-				if (create_table_user ()) {
-					print_msg ("Table user created", "success");
-					if (create_admin_user ()) {
-						print_msg ("Admin user created (see below)", "success");
-						$admin_message = 'Initial user created. Login with username "admin" and password "admin"';
-					}
-				}
-				else {
-					print_msg (mysqli_error ($dbh), "error");
-				}
-			}
-			else {
-				print_msg ("Table user exists, checking for version:", "notice");
+            # the user table
+            if (!in_array("user", $tables)) {
+                if (create_table_user()) {
+                    print_msg("Table user created", "success");
+                    if (create_admin_user()) {
+                        print_msg("Admin user created (see below)", "success");
+                        $admin_message = 'Initial user created. Login with username "admin" and password "admin"';
+                    }
+                } else {
+                    print_msg(mysqli_error($dbh), "error");
+                }
+            } else {
+                print_msg("Table user exists, checking for version:", "notice");
 
-				# check for date_format field in table
-				upgrade_table ("user", "date_format", "ALTER TABLE user ADD COLUMN date_format SMALLINT(6) NOT NULL DEFAULT '0' AFTER show_column_date");
+                # check for date_format field in table
+                upgrade_table("user", "date_format", "ALTER TABLE user ADD COLUMN date_format SMALLINT(6) NOT NULL DEFAULT '0' AFTER show_column_date");
 
-				# check for show_public field in table
-				upgrade_table ("user", "show_public", "ALTER TABLE user ADD COLUMN show_public ENUM('0','1') DEFAULT 1 NOT NULL");
+                # check for show_public field in table
+                upgrade_table("user", "show_public", "ALTER TABLE user ADD COLUMN show_public ENUM('0','1') DEFAULT 1 NOT NULL");
 
-				# check for admin field in table
-				upgrade_table ("user", "admin", "ALTER TABLE user ADD COLUMN admin ENUM('0','1') DEFAULT 0 NOT NULL AFTER password");
+                # check for admin field in table
+                upgrade_table("user", "admin", "ALTER TABLE user ADD COLUMN admin ENUM('0','1') DEFAULT 0 NOT NULL AFTER password");
 
-				# check for theme field in table
-				upgrade_table ("user", "theme", "ALTER TABLE user ADD COLUMN theme varchar(5) DEFAULT '' NOT NULL AFTER password");
-			}
+                # check for theme field in table
+                upgrade_table("user", "theme", "ALTER TABLE user ADD COLUMN theme varchar(5) DEFAULT '' NOT NULL AFTER password");
+            }
 
-			############## favicon support ##############
+            ############## favicon support ##############
 
-			if ($convert = @exec ('which convert')) {
-				$convert_favicons = "true";
-				print_msg ("ImageMagick convert found: $convert", "success");
-			}
-			else {
-				$convert = "";
-				$convert_favicons = "false";
-				print_msg ("ImageMagick convert not found. Make sure ImageMagick is installed and specify location of convert manually or set \$convert_favicons to false.", "error");
-			}
+            if ($convert = @exec('which convert')) {
+                $convert_favicons = "true";
+                print_msg("ImageMagick convert found: $convert", "success");
+            } else {
+                $convert = "";
+                $convert_favicons = "false";
+                print_msg("ImageMagick convert not found. Make sure ImageMagick is installed and specify location of convert manually or set \$convert_favicons to false.", "error");
+            }
 
-			if ($identify = @exec ('which identify')) {
-				$convert_favicons = "true";
-				print_msg ("ImageMagick identify found: $identify", "success");
-			}
-			else {
-				$identify = "";
-				$convert_favicons = "false";
-				print_msg ("ImageMagick identify not found. Make sure ImageMagick is installed and specify location of identify manually or set \$convert_favicons to false.", "error");
-			}
+            if ($identify = @exec('which identify')) {
+                $convert_favicons = "true";
+                print_msg("ImageMagick identify found: $identify", "success");
+            } else {
+                $identify = "";
+                $convert_favicons = "false";
+                print_msg("ImageMagick identify not found. Make sure ImageMagick is installed and specify location of identify manually or set \$convert_favicons to false.", "error");
+            }
 
-			if (is_writable ("./favicons/")) {
-				print_msg ("./favicons directory is writable by the webserver, good.", "success");
-			}
-			else {
-				print_msg ("./favicons directory is not writable by the webserver. Adjust permissions manually.", "error");
-			}
+            if (is_writable("./favicons/")) {
+                print_msg("./favicons directory is writable by the webserver, good.", "success");
+            } else {
+                print_msg("./favicons directory is not writable by the webserver. Adjust permissions manually.", "error");
+            }
 
 
-			$config = '
+            $config = '
 &lt;?php
 if (basename ($_SERVER[\'SCRIPT_NAME\']) == basename (__FILE__)) {
 	die ("no direct access allowed");
@@ -513,22 +499,21 @@ $delete_image = \'&lt;img src="./images/delete.gif" title="%s" alt=""&gt;\';
 $delimiter = "/";
 ?&gt;';
 
-			echo '<p>Paste the configuration shown below in the configuration file <span style="font-family:courier">./config/config.php</span></p>' . "\n";
-			if ($admin_message != '') {
-				echo $admin_message;
-			}
-			print_msg ("<p>IMPORTANT! Do not forget to remove this install.php script.</p>");
-			echo '<pre style="background-color: #E0E0E0; border: 1px black solid; padding: 20px">';
-			echo $config;
-			echo "</pre>\n";
-			echo '<a href="./index.php">Now go Bookmark...</a>';
-		}
-	}
-}
-else {
-	html_db ();
+            echo '<p>Paste the configuration shown below in the configuration file <span style="font-family:courier">./config/config.php</span></p>' . "\n";
+            if ($admin_message != '') {
+                echo $admin_message;
+            }
+            print_msg("<p>IMPORTANT! Do not forget to remove this install.php script.</p>");
+            echo '<pre style="background-color: #E0E0E0; border: 1px black solid; padding: 20px">';
+            echo $config;
+            echo "</pre>\n";
+            echo '<a href="./index.php">Now go Bookmark...</a>';
+        }
+    }
+} else {
+    html_db();
 }
 
-require_once (ABSOLUTE_PATH . "footer.php");
+require_once(ABSOLUTE_PATH . "footer.php");
 
 ?>

@@ -3,5 +3,5 @@
 </html>
 
 <?php
-exit ();
+exit();
 ?>

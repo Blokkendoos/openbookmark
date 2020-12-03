@@ -1,4 +1,5 @@
 <?php
+
 /**
  PHP Grab favicon
 
@@ -10,6 +11,7 @@
  @link      https://github.com/blamarche/openbookmark
  @link      https://github.com/blokkendoos/openbookmark
  */
+
 require_once "./header.php";
 logged_in_only();
 
@@ -40,9 +42,8 @@ if (count($bmlist) > 0) {
         <?php
         if ($mysql->query($query)) {
             while ($row = mysqli_fetch_row($mysql->result)) {
-            
                 $htmlResponse = verifyUrl($row[0]);
-                if ($htmlResponse <> 200 AND $htmlResponse <> 301) {
+                if ($htmlResponse <> 200 and $htmlResponse <> 301) {
                     ?>
 
                 <tr>
@@ -57,7 +58,7 @@ if (count($bmlist) > 0) {
                     <td><? echo $htmlResponse; ?></td>
                 </tr>
                        
-                    <?php            
+                    <?php
                 }
             }
         } else {
@@ -84,7 +85,7 @@ if (count($bmlist) > 0) {
  i.e. check whether the content loads successfull (200) or not.
 
  @param $url the URL to verify
- 
+
  @return the HTTP response code
  */
 function verifyUrl($url)
@@ -100,7 +101,7 @@ function verifyUrl($url)
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
     curl_exec($ch);
     $response = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);  
+    curl_close($ch);
     return $response;
 }
 
