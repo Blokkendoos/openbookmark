@@ -54,7 +54,7 @@ class favicon
 
      @param $url the URL
 
-     @return true if favicon was found, otherwise false
+     @return $retval image if favicon was found, otherwise false
      */
     function get_favicon($url)
     {
@@ -72,29 +72,26 @@ class favicon
         $this->get_favicon_url($url, $domain);
         if (empty($this->favicon_url)) {
             $this->get_favicon_api($domain);
+            // if there is still no match, try if there is a favicon in the root of the domain
+            if (empty($this->favicon_url)) {
+                $this->favicon_url = 'http://' . $domain . '/favicon.ico';
+            }
         }
 
-        if ($this->favicon_url) {
-            // HTML data icon?
-            $data_pos = strpos($this->favicon_url, 'data:');
-            if ($data_pos === false) {
-                if ($this->debug) error_log("Favicon URL found: $this->favicon_url");
-                // strip URL parameters, if any
-                $qm_pos = strpos($this->favicon_url, '?');
-                if ($qm_pos !== false) {
-                    $this->favicon_url = substr($this->favicon_url, 0, $qm_pos);
-                }
-                $retval = $this->get_favicon_image();
-            } else {
-                if ($this->debug) error_log('Data URI found');
-                include_once ABSOLUTE_PATH . 'DataUri.php';
-                $data_uri = null;
-                if (DataUri::tryParse($this->favicon_url, $data_uri)) {
-                    $data = false;
-                    if ($data_uri->tryDecodeData($data)) {
-                        if ($data !== false) {
-                            $retval = $this->get_favicon_data($data);
-                        }
+        // HTML data icon?
+        $data_pos = strpos($this->favicon_url, 'data:');
+        if ($data_pos === false) {
+            if ($this->debug) error_log("Favicon URL found: $this->favicon_url");
+            $retval = $this->get_favicon_image();
+        } else {
+            if ($this->debug) error_log('Data URI found');
+            include_once ABSOLUTE_PATH . 'DataUri.php';
+            $data_uri = null;
+            if (DataUri::tryParse($this->favicon_url, $data_uri)) {
+                $data = false;
+                if ($data_uri->tryDecodeData($data)) {
+                    if ($data !== false) {
+                        $retval = $this->get_favicon_data($data);
                     }
                 }
             }
@@ -106,7 +103,7 @@ class favicon
     }
 
     /**
-     Load the favicon from the given URL.
+     Get the favicon URL from a generic webpage.
 
      @param $url    the URL
      @param $domain domain-name
@@ -116,33 +113,27 @@ class favicon
     function get_favicon_url($url, $domain)
     {
         $html = $this->load($url);
-        /** @var Regular expression used for searching a favicon in the URL */
-        $regExPattern = '/((<link[^>]+rel=.(icon|shortcut icon|alternate icon)[^>]+>))/i';
-        if (@preg_match($regExPattern, $html, $matchTag)) {
-            $regExPattern = '/href=(\'|\")(.*?)\1/i';
-            if (isset($matchTag[1]) and @preg_match($regExPattern, $matchTag[1], $matchUrl)) {
+        if (@preg_match(
+            '/((<link[^>]+rel=.(icon|shortcut icon|alternate icon)[^>]+>))/i',
+            $html,
+            $matchTag)
+        ) {
+            $regExPattern = ;
+            if (isset($matchTag[1]) and
+                @preg_match('/href=(\'|\")(.*?)\1/i',
+                            $matchTag[1],
+                            $matchUrl)
+            ) {
                 if (isset($matchUrl[2])) {
                     // Build Favicon Link
-                    $favicon = $this->rel2abs(trim($matchUrl[2]), 'http://' . $domain . '/');
+                    $this->favicon_url = $this->rel2abs(trim($matchUrl[2]), 'http://' . $domain . '/');
                 }
             }
-        }
-
-        // if there is no match, try if there is a favicon in the root of the domain
-        if (empty($favicon)) {
-            $favicon = 'http://' . $domain . '/favicon.ico';
-        }
-
-        // try to load favicon
-        if (@getimagesize($favicon)) {
-            $this->favicon_url = $favicon;
-        } else {
-            $this->favicon_url = null;
         }
     }
 
     /**
-     Load the favicon using a public API.
+     Get the favicon URL from a generic webpage, using a public API.
 
      @param $domain The domain
 
@@ -257,23 +248,8 @@ class favicon
                 error_log("curl_exec request-error: $curlerr");
                 $content = $this->load_alt($url, $agent);
             }
-            curl_close($ch);
-            unset($ch);
         } else {
             $content = $this->load_alt($url, $agent);
-
-            $context = array('http' => array('user_agent' => $agent,));
-            $context = stream_context_create($context);
-            if (function_exists('file_get_contents')) {
-                $content = file_get_contents($url, null, $context);
-            } else {
-                $fh = fopen($url, 'r', false, $context);
-                $content = '';
-                while (!feof($fh)) {
-                    $content .= fread($fh, 128); // because filesize() will not work on URLS?
-                }
-                fclose($fh);
-            }
         }
         return $content;
     }
