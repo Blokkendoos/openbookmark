@@ -33,7 +33,7 @@ class sidebar
             );
 
         if ($mysql->query($query)) {
-            while ($row = mysql_fetch_assoc($mysql->result)) {
+            while ($row = mysqli_fetch_assoc($mysql->result)) {
                 if (!isset($this->bookmarks[$row['childof']])) {
                     $this->bookmarks[$row['childof']] = array ();
                 }
