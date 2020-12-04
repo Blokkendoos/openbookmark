@@ -1,7 +1,7 @@
 <?php
 
 /**
- PHP Grab favicon
+ Verify bookmarks
 
  @category  Bookmarks
  @package   Openbookmark
