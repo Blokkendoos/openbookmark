@@ -128,6 +128,7 @@ $order = set_get_order();
           <li><a href="javascript:bookmarkdelete(checkselected())">Delete Bookmarks</a></li>
           <li><a href="./shared.php">Shared Bookmarks</a></li>
           <li><a href="javascript:bookmarkverify(checkselected())">Verify Bookmarks</a></li>
+          <li><a href="javascript:bookmarkrefresh(checkselected())">Refresh favicons</a></li>
         </ul>
         </div>
     
