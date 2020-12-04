@@ -228,7 +228,7 @@ class favicon
                 error_log('hash value exists');
             }
             return true;
-        } elseif ($fp = @fopen($this->icon_name, 'w')) {
+        } elseif ($fp = fopen($this->icon_name, 'w')) {
             if ($this->debug) {
                 error_log("new hash value, fname: $this->icon_name");
             }
@@ -237,7 +237,7 @@ class favicon
             return true;
         } else {
             if ($this->debug) {
-                error_log("favicon not found, URL: $this->favicon_url");
+                error_log("favicon not found, fname: $this->icon_name");
             }
             return false;
         }
