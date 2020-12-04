@@ -176,11 +176,11 @@ $order = set_get_order();
                     $searchfields = array ('url', 'title', 'description');
 
                     if ($search == '[dupe_check_bookmarks]') {
-                        $query = "SELECT a.title,a.url,a.description,UNIX_TIMESTAMP(a.date) as timestamp,a.childof,a.id,a.favicon,a.public,
-							f.name,f.id as fid, f.public as fpublic from bookmark a 
-							inner join bookmark b on a.url=b.url and a.id<>b.id 
+                        $query = "SELECT a.title, a.url, a.description, UNIX_TIMESTAMP(a.date) as timestamp, a.childof, a.id, a.favicon, a.public,
+							f.name, f.id as fid, f.public as fpublic from bookmark a 
+							INNER JOIN bookmark b on a.url=b.url and a.id<>b.id 
 							LEFT JOIN folder f ON a.childof=f.id
-							order by a.url";
+							ORDER BY a.url, f.name, a.title";
                     } else {
                         $query = assemble_query($search, $searchfields);
                     }
