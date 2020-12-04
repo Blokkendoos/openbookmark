@@ -30,7 +30,7 @@ if (count($bmlist) > 0) {
         <?php
         $qbmlist = implode(',', $bmlist);
         $query = sprintf(
-            "SELECT url, title FROM bookmark WHERE id IN(%s) AND user='%s'",
+            "SELECT url, title FROM bookmark WHERE id IN(%s) AND user='%s' ORDER BY title",
             $mysql->escape($qbmlist),
             $mysql->escape($username)
         );
