@@ -1,5 +1,5 @@
 <?php
-require_once("./header.php");
+require_once "./header.php";
 logged_in_only();
 
 $bmlist             = set_get_num_list('bmlist');
@@ -12,17 +12,34 @@ $post_childof       = set_post_childof();
 $post_public        = set_post_bool_var("public", false);
 
 if (count($bmlist) > 1) {
-    # if there is more than one bookmark to edit, we just care about the
-    # public/private field.
-    if (! isset($_POST['public'])) {
+    // if there is more than one bookmark to edit, we just care about the
+    // public/private field.
+    if (isset($_POST['public'])) {
+        $bmlist = implode(",", $bmlist);
+        $query = sprintf(
+            "UPDATE bookmark SET public='%d'
+					WHERE id IN (%s)
+					AND user='%s'",
+            $mysql->escape($post_public),
+            $mysql->escape($bmlist),
+            $mysql->escape($username)
+        );
+        if ($mysql->query($query)) {
+            echo "Bookmark successfully updated<br>\n";
+            echo '<script language="JavaScript">reloadclose();</script>';
+        } else {
+            message($mysql->error);
+        }
+    } else {
         $qbmlist = implode(",", $bmlist);
         $query = sprintf(
             "SELECT title, id, public, favicon FROM bookmark WHERE id IN (%s) AND user='%s' ORDER BY title",
             $mysql->escape($qbmlist),
             $mysql->escape($username)
         );
+
         if ($mysql->query($query)) {
-            require_once(ABSOLUTE_PATH . "bookmarks.php");
+            include_once ABSOLUTE_PATH . "bookmarks.php";
             $query_string = "?bmlist=" . implode("_", $bmlist);
             ?>
 
@@ -68,22 +85,6 @@ if (count($bmlist) > 1) {
         } else {
             message($mysql->error);
         }
-    } else {
-        $bmlist = implode(",", $bmlist);
-        $query = sprintf(
-            "UPDATE bookmark SET public='%d'
-					WHERE id IN (%s)
-					AND user='%s'",
-            $mysql->escape($post_public),
-            $mysql->escape($bmlist),
-            $mysql->escape($username)
-        );
-        if ($mysql->query($query)) {
-            echo "Bookmark successfully updated<br>\n";
-            echo '<script language="JavaScript">reloadclose();</script>';
-        } else {
-            message($mysql->error);
-        }
     }
 } elseif (count($bmlist) < 1) {
     message("No Bookmark to edit.");
@@ -102,7 +103,7 @@ if (count($bmlist) > 1) {
             message("No Bookmark to edit");
         } else {
             $row = mysqli_fetch_object($mysql->result);
-            require_once(ABSOLUTE_PATH . "folders.php");
+            include_once ABSOLUTE_PATH . "folders.php";
             $tree = new folder();
             $query_string = "?expand=" . implode(",", $tree->get_path_to_root($row->childof)) . "&amp;folderid=" . $row->childof;
             $path = $tree->print_path($row->childof);
@@ -110,15 +111,15 @@ if (count($bmlist) > 1) {
                 if (isset($row->favicon)) {
                     @unlink($row->favicon);
                 }
-                require_once(ABSOLUTE_PATH . "favicon.php");
+                include_once ABSOLUTE_PATH . "favicon.php";
                 $favicon = new favicon($post_url);
                 if (isset($favicon->favicon)) {
                     $icon = '<img src="' . $favicon->favicon . '" width="16" height="16" alt="">';
                     $query = sprintf(
-                        "UPDATE bookmark SET favicon='%s' WHERE user='%s' AND id='%d'",
+                        "UPDATE bookmark SET favicon='%s' WHERE id='%d' AND user='%s'",
                         $mysql->escape($favicon->favicon),
-                        $mysql->escape($username),
-                        $mysql->escape($bmlist[0])
+                        $mysql->escape($bmlist[0]),
+                        $mysql->escape($username)
                     );
                     if (!$mysql->query($query)) {
                         message($mysql->error);
@@ -185,5 +186,5 @@ if (count($bmlist) > 1) {
     }
 }
 
-require_once(ABSOLUTE_PATH . "footer.php");
+require_once ABSOLUTE_PATH . "footer.php";
 ?>
