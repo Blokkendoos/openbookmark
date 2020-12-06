@@ -265,6 +265,8 @@ class favicon
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($ch, CURLOPT_FAILONERROR, true);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30); //timeout in seconds
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
             $content = curl_exec($ch);
             $curlerr = curl_error($ch);
             curl_close($ch);
@@ -291,7 +293,10 @@ class favicon
     function load_alt($url, $agent)
     {
         // use curl or file_get_contents (both with user_agent) and fopen/fread as fallback
-        $context = array('http' => array('user_agent' => $agent,));
+        $context = array('http' => 
+                         array('user_agent' => $agent,
+                               'timeout' => 60,)
+                         );
         $context = stream_context_create($context);
         if (function_exists('file_get_contents')) {
             $content = file_get_contents($url, null, $context);
