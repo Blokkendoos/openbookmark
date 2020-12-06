@@ -103,7 +103,7 @@ class DataUri
      * @return int Class constant of either
      *             {@link DataUri::ENCODING_URL_ENCODED_OCTETS} or
      *             {@link DataUri::ENCODING_BASE64}
-     *
+     */
     public function getEncoding()
     {
         return $this->encoding;

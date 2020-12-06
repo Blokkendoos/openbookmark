@@ -30,9 +30,13 @@ if (basename($_SERVER['SCRIPT_NAME']) == basename(__FILE__)) {
  */
 class favicon
 {
-    /** @var Boolean Set to <code>true</code> to show debugging messages */
+    /**
+     * @var Boolean Set to <code>true</code> to show debugging messages 
+     */
     private $debug = true;
-    /** @var String The directory where the favicon images are stored */
+    /**
+     * @var String The directory where the favicon images are stored 
+     */
     private $favicon_dir = './favicons/';
 
     function favicon($url)
@@ -120,16 +124,14 @@ class favicon
     function get_favicon_url($url, $domain)
     {
         $html = $this->load($url);
-        if (
-            @preg_match(
-                '/((<link[^>]+rel=.(icon|shortcut icon|alternate icon)[^>]+>))/i',
-                $html,
-                $matchTag
-            )
+        if (@preg_match(
+            '/((<link[^>]+rel=.(icon|shortcut icon|alternate icon)[^>]+>))/i',
+            $html,
+            $matchTag
+        )
         ) {
-            if (
-                isset($matchTag[1]) and
-                @preg_match(
+            if (isset($matchTag[1]) 
+                and @preg_match(
                     '/href=(\'|\")(.*?)\1/i',
                     $matchTag[1],
                     $matchUrl
