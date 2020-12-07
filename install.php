@@ -50,7 +50,8 @@ function create_table_bookmark()
 		url char(200) NOT NULL default '',
 		description mediumtext default NULL,
 		private enum('0','1') default NULL,
-		date timestamp NOT NULL,
+		modified timestamp NOT NULL,
+		date timestamp NOT NULL default CURRENT_TIMESTAMP,
 		childof int(11) NOT NULL default '0',
 		id int(11) NOT NULL auto_increment,
 		deleted enum('0','1') NOT NULL default '0',
@@ -366,6 +367,12 @@ if ($submit) {
 
                 # check for public field in table
                 upgrade_table("bookmark", "public", "ALTER TABLE bookmark ADD COLUMN public ENUM('0','1') DEFAULT 0 NOT NULL");
+
+                # check for modified date (rename date)
+                upgrade_table("bookmark", "modified", "ALTER TABLE bookmark CHANGE COLUMN date modified timestamp");
+
+                # check for date
+                upgrade_table("bookmark", "date", "ALTER TABLE bookmark ADD COLUMN date timestamp DEFAULT CURRENT_TIMESTAMP AFTER modified");
             }
 
             # the folder table
