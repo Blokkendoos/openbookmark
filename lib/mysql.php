@@ -36,6 +36,7 @@ class mysql
     }
 }
 
+// Compatibility layer with PHP < 5.3
 if (!function_exists('mysqli_result')) {
     function mysqli_result($result, $col = 0)
     {
@@ -44,5 +45,15 @@ if (!function_exists('mysqli_result')) {
             return $row[$col];
         }
         return null;
+    }
+}
+
+if (!function_exists('mysqli_fetch_all')) {
+    function mysqli_fetch_all($result, $resulttype = MYSQLI_NUM)
+    {
+        for ($res = array(); $tmp = $this->fetch_array($result, $resulttype);) {
+            $res[] = $tmp;
+        }
+        return $res;
     }
 }

@@ -148,6 +148,7 @@ $order = set_get_order();
         <ul class="nav" id="mnu_tools">
             <?php if (admin_only()) { ?>
             <li><a href="./admin.php">Admin</a></li>
+            <li><a href="./bookmark_refresh_all.php">Refresh all Favicons</a></li>
             <?php } ?>
             <li><a href="./import.php">Import</a></li>
             <li><a href="./export.php">Export</a></li>
