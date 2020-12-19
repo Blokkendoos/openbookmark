@@ -90,7 +90,7 @@ if (isset($_GET['user']) && check_username($user)) {
 
     if ($mysql->query($query)) {
             $bookmarks = array ();
-        while ($row = mysql_fetch_assoc($mysql->result)) {
+        while ($row = mysqli_fetch_assoc($mysql->result)) {
                 array_push($bookmarks, $row);
         }
             list_bookmarks(
@@ -127,7 +127,7 @@ if (isset($_GET['user']) && check_username($user)) {
                 ) AS tmp GROUP BY user";
 
     if ($mysql->query($query)) {
-        while ($row = mysql_fetch_object($mysql->result)) {
+        while ($row = mysqli_fetch_object($mysql->result)) {
                 echo '<p class="shared"><a href="' . $_SERVER['SCRIPT_NAME'] . '?user=' . $row->user . '&folderid=0"><b>' . $row->user . "</b><br>\n";
                 echo "Shares $row->folders Folders and $row->bookmarks Bookmarks</a></p>\n";
         }
