@@ -170,7 +170,7 @@ class favicon
             if ($this->debug) {
                 error_log('FaviconGrabber');
             }
-            $echo = json_decode($this->load('http://favicongrabber.com/api/grab/' . $domain), true);
+            $echo = json_decode($this->load('https://favicongrabber.com/api/grab/' . $domain), true);
             // Get Favicon URL from Array out of json data (@ if something went wrong)
             $this->favicon_url = @$echo['icons']['0']['src'];
         }
@@ -180,7 +180,7 @@ class favicon
             if ($this->debug) {
                 error_log('Google');
             }
-            $this->favicon_url = 'http://www.google.com/s2/favicons?domain=' . $domain;
+            $this->favicon_url = 'https://www.google.com/s2/favicons?domain=' . $domain;
         }
     }
 
