@@ -33,7 +33,7 @@ class favicon
     /**
      * @var Boolean Set to <code>true</code> to show debugging messages 
      */
-    private $debug = true;
+    private $debug = false;
     /**
      * @var String The directory where the favicon images are stored 
      */
