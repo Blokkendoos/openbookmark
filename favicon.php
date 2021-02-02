@@ -76,6 +76,13 @@ class favicon
         $url = strtolower($url);
         $domain = $this->check_domain($url);
 
+        // skip local network URLs
+        if (preg_match(
+            '/http.?\:\/\/192\..*/i',
+            $url)) {
+            return $retval;
+        }
+
         $this->get_favicon_url($url, $domain);
         if (empty($this->favicon_url)) {
             $this->get_favicon_api($domain);
