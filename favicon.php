@@ -78,7 +78,7 @@ class favicon
 
         // skip local network URLs
         if (preg_match(
-            '/http.?\:\/\/192\..*/i',
+            '/http.?\:\/\/192\..*|http.?\:\/\/localhost.*/i',
             $url)) {
             return $retval;
         }
