@@ -6,7 +6,7 @@ class mysql
     var $error = "";
     var $result = false;
 
-    function mysql()
+    function __construct()
     {
         global $dsn;
         global $dbh;

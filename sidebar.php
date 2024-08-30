@@ -12,7 +12,7 @@ require_once(ABSOLUTE_PATH . "lib/login.php");
 
 class sidebar
 {
-    function sidebar()
+    function __construct()
     {
             # collect the folder data
             require_once(ABSOLUTE_PATH . "folders.php");

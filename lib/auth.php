@@ -6,7 +6,7 @@ class auth
     var $username = '';
     var $password = '';
 
-    function auth()
+    function __construct()
     {
         if (!session_id()) {
             session_start();

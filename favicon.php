@@ -39,7 +39,7 @@ class favicon
      */
     private $favicon_dir = './favicons/';
 
-    function favicon($url)
+    function __construct($url)
     {
         global $settings, $convert_favicons;
 

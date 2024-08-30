@@ -7,7 +7,7 @@ if (basename($_SERVER['SCRIPT_NAME']) == basename(__FILE__)) {
 class folder
 {
 
-    function folder($user = false)
+    function __construct($user = false)
     {
         global $settings, $username, $folderid, $expand;
 

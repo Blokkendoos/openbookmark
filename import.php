@@ -161,7 +161,7 @@ if (!isset($_FILES['importfile']['tmp_name']) || $_FILES['importfile']['tmp_name
 
 class import
 {
-    function import()
+    function __construct()
     {
         global $username, $parentfolder, $mysql, $dbh;
 
