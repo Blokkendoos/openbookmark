@@ -2,12 +2,12 @@
 
 function is_mobile_browser()
 {
-    //manual override to show mobiel
+    // manual override to show mobile
     if (@$_GET['mobile'] == "1") {
         return true;
     }
 
-    //detect mobile
+    // detect mobile
     $device = false;
     if (stristr($_SERVER['HTTP_USER_AGENT'], 'ipad')) {
         $device = true;
@@ -23,9 +23,9 @@ function is_mobile_browser()
     return $device;
 }
 
-###
-### prints a message and exits the application properly
-###
+/*
+ * Prints a message and exits the application properly
+ */
 function message($message)
 {
     if (isset($message)) {
@@ -59,13 +59,12 @@ function input_validation($data, $charset = 'UTF-8')
     return $data;
 }
 
+### Verify some GET variables
+
 /*
- * Verify some GET variables
+ * Setting the expand variable. If empty in _GET we use the one from _SESSION if available.
+ * Call this function only once, otherwise some strange things will happen.
  */
-###
-### Setting the expand variable. If empty in _GET we use the one from _SESSION if available.
-### Call this function only once, otherwise some strange things will happen.
-###
 function set_get_expand()
 {
     if (!isset($_GET['expand'])) {
@@ -101,10 +100,7 @@ function set_get_folderid()
     return ($return);
 }
 
-
-
-
-################## GET title and url are handled a bit special
+### GET title and url are handled a bit special
 
 function set_get_title()
 {
@@ -180,8 +176,6 @@ function set_url()
     return $return;
 }
 
-#############################################
-
 function set_get_noconfirm()
 {
     if (!isset($_GET['noconfirm']) || $_GET['noconfirm'] == '') {
@@ -195,16 +189,16 @@ function set_get_noconfirm()
 function set_get_order()
 {
     # order[0] is an indicator, order[1] the SQL (ORDER BY) column(s)
-    $return = array ("titleasc", "title ASC");
+    $return = array ("title_asc", "title ASC");
     if (!isset($_GET['order']) || $_GET['order'] == '') {
-    } elseif ($_GET['order'] == 'datedesc') {
-        $return = array ("datedesc", "date DESC");
-    } elseif ($_GET['order'] == 'dateasc') {
-        $return = array ("dateasc", "date ASC, title ASC");
-    } elseif ($_GET['order'] == 'titledesc') {
-        $return = array ("titledesc", "title DESC, title ASC");
-    } elseif ($_GET['order'] == 'titleasc') {
-        $return = array ("titleasc", "title ASC");
+    } elseif ($_GET['order'] == 'date_desc') {
+        $return = array ("date_desc", "date DESC");
+    } elseif ($_GET['order'] == 'date_asc') {
+        $return = array ("date_asc", "date ASC, title ASC");
+    } elseif ($_GET['order'] == 'title_desc') {
+        $return = array ("title_desc", "title DESC, title ASC");
+    } elseif ($_GET['order'] == 'title_asc') {
+        $return = array ("title_asc", "title ASC");
     } elseif ($_GET['order'] == 'url_desc') {
         $return = array ("url_desc", "substring_index(url, '/', 3) ASC, title ASC");
     } elseif ($_GET['order'] == 'url_asc') {
@@ -213,9 +207,7 @@ function set_get_order()
     return $return;
 }
 
-/*
- * Verify some POST variables
- */
+### Verify some POST variables
 
 function set_post_childof()
 {
@@ -303,10 +295,6 @@ function set_post_browser()
     return input_validation($return);
 }
 
-#########################################################
-
-###
-###
 ###
 
 function return_charsets()
@@ -442,8 +430,8 @@ function set_post_num_list($varname)
 }
 
 /*
- * This function checks the values of each entry in an array.
- * It returns an array with unique and only numeric entries.
+ * Check the values of each entry in an array,
+ * returns an array with unique and only numeric entries.
  */
 function set_num_array($array)
 {
@@ -472,7 +460,7 @@ function object_count()
     $return = '';
     $query = sprintf(
         "SELECT (SELECT COUNT(*) FROM bookmark WHERE user='%s') AS bookmarks,
-	                          (SELECT COUNT(*) FROM folder   WHERE user='%s') AS folders",
+                (SELECT COUNT(*) FROM folder   WHERE user='%s') AS folders",
         $mysql->escape($username),
         $mysql->escape($username)
     );

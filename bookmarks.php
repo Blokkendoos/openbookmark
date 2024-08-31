@@ -38,25 +38,25 @@ function list_bookmarks($bookmarks, $show_checkbox, $show_folder, $show_icon, $s
             $img_h = '<img src="./images/descending.gif" alt="" class="invisible">';
         }
 
-        if ($order[0] == 'titleasc') {
-            $sort_t = 'titledesc';
+        if ($order[0] == 'title_asc') {
+            $sort_t = 'title_desc';
             $img_t = '<img src="./images/ascending.gif" alt="">';
-        } elseif ($order[0] == 'titledesc') {
-            $sort_t = 'titleasc';
+        } elseif ($order[0] == 'title_desc') {
+            $sort_t = 'title_asc';
             $img_t = '<img src="./images/descending.gif" alt="">';
         } else {
-            $sort_t = 'titleasc';
+            $sort_t = 'title_asc';
             $img_t = '<img src="./images/descending.gif" alt="" class="invisible">';
         }
 
-        if ($order[0] == 'dateasc') {
-            $sort_d = 'datedesc';
+        if ($order[0] == 'date_asc') {
+            $sort_d = 'date_desc';
             $img_d = '<img src="./images/ascending.gif" alt="">';
-        } elseif ($order[0] == 'datedesc') {
-            $sort_d = 'dateasc';
+        } elseif ($order[0] == 'date_desc') {
+            $sort_d = 'date_asc';
             $img_d = '<img src="./images/descending.gif" alt="">';
         } else {
-            $sort_d = 'datedesc';
+            $sort_d = 'date_desc';
             $img_d = '<img src="./images/ascending.gif" alt="" class="invisible">';
         }
 
