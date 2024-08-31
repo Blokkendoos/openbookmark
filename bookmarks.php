@@ -27,6 +27,17 @@ function list_bookmarks($bookmarks, $show_checkbox, $show_folder, $show_icon, $s
     # print the bookmark header if enabled.
     # Yes, it's ugly PHP code, but beautiful HTML code.
     if ($show_header) {
+        if ($order[0] == 'url_asc') {
+            $sort_h = 'url_desc';
+            $img_h = '<img src="./images/ascending.gif" alt="">';
+        } elseif ($order[0] == 'url_desc') {
+            $sort_h = 'url_asc';
+            $img_h = '<img src="./images/descending.gif" alt="">';
+        } else {
+            $sort_h = 'url_asc';
+            $img_h = '<img src="./images/descending.gif" alt="" class="invisible">';
+        }
+
         if ($order[0] == 'titleasc') {
             $sort_t = 'titledesc';
             $img_t = '<img src="./images/ascending.gif" alt="">';
@@ -86,7 +97,14 @@ function list_bookmarks($bookmarks, $show_checkbox, $show_folder, $show_icon, $s
         }
         echo "\t\t" . '<div class="link">' . "\n";
         if ($show_icon) {
-            echo "\t\t\t" . '<img src="./images/bookmark_image.gif" alt="" class="invisible">' . "\n";
+            $query_data = array (
+                'folderid' => $folderid,
+                'expand' => implode(",", $expand),
+                'order' => $sort_h,
+            );
+            $query_string = assemble_query_string($query_data);
+            echo "\t\t\t" . '<a href="' . $scriptname . '?' . $query_string . '" class="f blink">U ' . $img_h . '</a>' . "\n";
+            #echo "\t\t\t" . '<img src="./images/bookmark_image.gif" alt="" class="invisible">' . "\n";
         }
         $query_data ['order'] = $sort_t;
         $query_string = assemble_query_string($query_data);

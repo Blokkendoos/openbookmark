@@ -194,18 +194,21 @@ function set_get_noconfirm()
 
 function set_get_order()
 {
+    # order[0] is an indicator, order[1] the SQL (ORDER BY) column(s)
+    $return = array ("titleasc", "title ASC");
     if (!isset($_GET['order']) || $_GET['order'] == '') {
-        $return = array ("titleasc", "title ASC");
     } elseif ($_GET['order'] == 'datedesc') {
         $return = array ("datedesc", "date DESC");
     } elseif ($_GET['order'] == 'dateasc') {
-        $return = array ("dateasc", "date ASC");
+        $return = array ("dateasc", "date ASC, title ASC");
     } elseif ($_GET['order'] == 'titledesc') {
-        $return = array ("titledesc", "title DESC");
+        $return = array ("titledesc", "title DESC, title ASC");
     } elseif ($_GET['order'] == 'titleasc') {
         $return = array ("titleasc", "title ASC");
-    } else {
-        $return = array ("titleasc", "title ASC");
+    } elseif ($_GET['order'] == 'url_desc') {
+        $return = array ("url_desc", "substring_index(url, '/', 3) ASC, title ASC");
+    } elseif ($_GET['order'] == 'url_asc') {
+        $return = array ("url_asc", "substring_index(url, '/', 3) DESC, title ASC");
     }
     return $return;
 }
