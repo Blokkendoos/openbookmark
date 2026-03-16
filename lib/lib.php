@@ -482,5 +482,5 @@ function assemble_query_string($data)
     foreach ($data as $key => $value) {
         array_push($return, $key . "=" . $value);
     }
-    return implode($return, "&");
+    return implode("&", $return);
 }
