@@ -61,7 +61,7 @@ if (
       <td>
         Export Bookmarks to Browser:
       </td>
-      <td width="<?php echo (($column_width_folder == 0) ? "auto" : $column_width_folder)?>">
+      <td width="<?php echo (((int)$column_width_folder == 0) ? "auto" : $column_width_folder)?>">
         <select name="browser">
           <option value="IE"<?php if ($default_browser == "IE") {
                 echo " selected";
@@ -99,7 +99,7 @@ if (
         Folder to export:
       </td>
       <td>
-    <div style="width:<?php echo (($column_width_folder == 0) ? "auto" : $column_width_folder); ?>; height:350px; overflow:auto;">
+    <div style="width:<?php echo (((int)$column_width_folder == 0) ? "auto" : $column_width_folder); ?>; height:350px; overflow:auto;">
 
     <?php
     require_once(ABSOLUTE_PATH . "folders.php");

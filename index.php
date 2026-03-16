@@ -165,7 +165,7 @@ $order = set_get_order();
     <div id="main">
 
             <?php if ($search_mode) : ?>
-            <div style="height: <?php echo ($table_height == 0) ? "auto" : $table_height; ?>; overflow:auto;">
+            <div style="height: <?php echo ((int)$table_height == 0) ? "auto" : $table_height; ?>; overflow:auto;">
 
                 <div class="bookmark">
                     <a class="f" href="./index.php"><img src="./images/folder_open.gif" alt=""> My Bookmarks</a>
@@ -222,7 +222,7 @@ $order = set_get_order();
             <?php else : ?>
     <!-- Folders starts here. -->
     <h2 id="folders-head" class="mobile nav mnu" target="folders">Folders</h2>
-    <div id="folders" class="folders mnu <?php echo (is_mobile_browser() ? "mobile" : ""); ?>" style="width: <?php echo ($column_width_folder == 0) ? "auto" : $column_width_folder; ?>; height: <?php echo ($table_height == 0) ? "auto" : $table_height; ?>;">
+    <div id="folders" class="folders mnu <?php echo (is_mobile_browser() ? "mobile" : ""); ?>" style="width: <?php echo ((int)$column_width_folder == 0) ? "auto" : $column_width_folder; ?>; height: <?php echo ((int)$table_height == 0) ? "auto" : $table_height; ?>;">
 
                 <?php
                 require_once(ABSOLUTE_PATH . "folders.php");
@@ -235,7 +235,7 @@ $order = set_get_order();
     </div>
 
     <!-- Bookmarks starts here. -->
-    <div class="bookmarks" style="height: <?php echo ($table_height == 0) ? "auto" : $table_height; ?>;">
+    <div class="bookmarks" style="height: <?php echo ((int)$table_height == 0) ? "auto" : $table_height; ?>;">
 
                 <?php
 
