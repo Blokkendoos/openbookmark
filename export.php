@@ -171,134 +171,158 @@ if (
         echo "<TITLE>Bookmarks</TITLE>\n";
         echo "<H1>Bookmarks</H1>\n";
         echo "<DL><p>\n";
-        $export = new export();
+        $export = new Export();
         $export->make_tree($folderid);
         echo "</DL><p>\n";
     } elseif ($browser == "opera") {
         echo "Opera Hotlist version 2.0\n";
         echo "Options: encoding = utf8, version=3\n\n";
-        $export = new export();
+        $export = new Export();
         $export->make_tree($folderid);
     }
 }
 
-class export
+class Export
 {
-    function export()
+    private $tree;
+    private $browser;
+    private int $counter = 0;
+    private string $charset;
+    private array $bookmarks = [];
+
+    public function __construct()
     {
-        global $settings, $browser;
-        # collect the folder data
+        global $settings, $browser, $username, $mysql;
+
+        // collect the folder data
         require_once(ABSOLUTE_PATH . "folders.php");
+
         $this->tree = new folder();
-        $this->tree->folders[0] = array ('id' => 0, 'childof' => null, 'name' => $settings['root_folder_name']);
+        $this->tree->folders[0] = [
+            'id' => 0,
+            'childof' => null,
+            'name' => $settings['root_folder_name']
+        ];
 
-        global $username, $mysql;
         $this->browser = $browser;
+        $this->charset = set_post_charset();
 
-        $this->counter = 0;
-
-        # work around PHP < 5 problem
-        # http://bugs.php.net/bug.php?id=25670
-        if (intval(str_replace('.', '', phpversion())) < 500) {
-            $this->charset = 'iso-8859-1';
-        } else {
-            $this->charset = set_post_charset();
-        }
-
-        # collect the bookmark data
+        // collect the bookmark data
         $query = sprintf(
             "SELECT title, url, description, childof, id
-			FROM bookmark 
-			WHERE user='%s' 
-			AND deleted!='1'",
+             FROM bookmark 
+             WHERE user='%s' 
+             AND deleted!='1'",
             $mysql->escape($username)
         );
 
         if ($mysql->query($query)) {
             while ($row = mysqli_fetch_assoc($mysql->result)) {
-                if (!isset($this->bookmarks[$row['childof']])) {
-                    $this->bookmarks[$row['childof']] = array ();
+                $child = $row['childof'] ?? 0;
+
+                if (!isset($this->bookmarks[$child])) {
+                    $this->bookmarks[$child] = [];
                 }
-                array_push($this->bookmarks[$row['childof']], $row);
+
+                $this->bookmarks[$child][] = $row;
             }
         } else {
             message($mysql->error);
         }
     }
 
-    function make_tree($id)
+    public function make_tree(int $id): void
     {
         if (isset($this->tree->children[$id])) {
             $this->counter++;
+
             foreach ($this->tree->children[$id] as $value) {
                 $this->print_folder($value);
                 $this->make_tree($value);
                 $this->print_folder_close();
             }
+
             $this->counter--;
         }
+
         $this->print_bookmarks($id);
     }
 
-
-    function print_folder($folderid)
+    public function print_folder(int $folderid): void
     {
         $spacer = str_repeat("    ", $this->counter);
-        $foldername = html_entity_decode($this->tree->folders[$folderid]['name'], ENT_QUOTES, $this->charset);
-        if ($this->browser == "netscape") {
-            echo $spacer . "<DT><H3>" . $foldername . "</H3>\n";
-            echo $spacer . "<DL><p>\n";
-        } elseif ($this->browser == "IE") {
-            echo $spacer . '<DT><H3 FOLDED ADD_DATE="">' . $foldername . "</H3>\n";
-            echo $spacer . "<DL><p>\n";
-        } elseif ($this->browser == "opera") {
-            echo "\n#FOLDER\n";
-            echo "\tNAME=" . $foldername . "\n";
+        $foldername = html_entity_decode(
+            $this->tree->folders[$folderid]['name'],
+            ENT_QUOTES,
+            $this->charset
+        );
+
+        switch ($this->browser) {
+            case "netscape":
+                echo $spacer . "<DT><H3>{$foldername}</H3>\n";
+                echo $spacer . "<DL><p>\n";
+                break;
+
+            case "IE":
+                echo $spacer . "<DT><H3 FOLDED ADD_DATE=\"\">{$foldername}</H3>\n";
+                echo $spacer . "<DL><p>\n";
+                break;
+
+            case "opera":
+                echo "\n#FOLDER\n";
+                echo "\tNAME={$foldername}\n";
+                break;
         }
     }
 
-    function print_folder_close()
+    public function print_folder_close(): void
     {
         $spacer = str_repeat("    ", $this->counter);
-        if ($this->browser == "netscape" || $this->browser == "IE") {
+
+        if ($this->browser === "netscape" || $this->browser === "IE") {
             echo $spacer . "</DL><p>\n";
-        } elseif ($this->browser == "opera") {
+        } elseif ($this->browser === "opera") {
             echo "\n-\n";
         }
     }
 
-    function print_bookmarks($folderid)
+    public function print_bookmarks(int $folderid): void
     {
         $spacer = str_repeat("    ", $this->counter);
-        if (isset($this->bookmarks[$folderid])) {
-            foreach ($this->bookmarks[$folderid] as $value) {
-                $url   = html_entity_decode($value['url'], ENT_QUOTES, $this->charset);
-                $title = html_entity_decode($value['title'], ENT_QUOTES, $this->charset);
-                if ($value['description'] != '') {
-                    $description = html_entity_decode($value['description'], ENT_QUOTES, $this->charset);
-                } else {
-                    $description = '';
-                }
 
-                if ($this->browser == 'netscape') {
+        if (!isset($this->bookmarks[$folderid])) {
+            return;
+        }
+
+        foreach ($this->bookmarks[$folderid] as $value) {
+            $url = html_entity_decode($value['url'], ENT_QUOTES, $this->charset);
+            $title = html_entity_decode($value['title'], ENT_QUOTES, $this->charset);
+            $description = !empty($value['description'])
+                ? html_entity_decode($value['description'], ENT_QUOTES, $this->charset)
+                : '';
+
+            switch ($this->browser) {
+                case 'netscape':
                     echo $spacer . '    <DT><A HREF="' . $url . '">' . $title . "</A>\n";
-                    if ($description != '') {
+                    if ($description !== '') {
                         echo $spacer . '    <DD>' . $description . "\n";
                     }
-                } elseif ($this->browser == 'IE') {
+                    break;
+
+                case 'IE':
                     echo $spacer . '    <DT><A HREF="' . $url . '" ADD_DATE="" LAST_VISIT="" LAST_MODIFIED="">' . $title . "</A>\n";
-                    # unfortunately description for bookmarks in MS Internet Explorer is not supported.
-                    # thats why we just ignore the output of the description here.
-                } elseif ($this->browser == 'opera') {
+                    break;
+
+                case 'opera':
                     echo "\n#URL\n";
-                    echo "\tNAME=" . $title . "\n";
-                    echo "\tURL=" . $url . "\n";
-                    if ($description != "") {
-                        # opera cannot handle the \r\n character, so we fix this.
+                    echo "\tNAME={$title}\n";
+                    echo "\tURL={$url}\n";
+
+                    if ($description !== "") {
                         $description = str_replace("\r\n", " ", $description);
-                        echo "\tDESCRIPTION=" . $description . "\n";
+                        echo "\tDESCRIPTION={$description}\n";
                     }
-                }
+                    break;
             }
         }
     }
