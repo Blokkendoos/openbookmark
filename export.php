@@ -103,7 +103,7 @@ if (
 
     <?php
     require_once(ABSOLUTE_PATH . "folders.php");
-    $tree = new folder();
+    $tree = new Folder();
     $tree->make_tree(0);
     $tree->print_tree();
     ?>
@@ -197,7 +197,7 @@ class Export
         // collect the folder data
         require_once(ABSOLUTE_PATH . "folders.php");
 
-        $this->tree = new folder();
+        $this->tree = new Folder();
         $this->tree->folders[0] = [
             'id' => 0,
             'childof' => null,

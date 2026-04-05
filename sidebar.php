@@ -16,7 +16,7 @@ class sidebar
     {
             # collect the folder data
             require_once(ABSOLUTE_PATH . "folders.php");
-            $this->tree = new folder();
+            $this->tree = new Folder();
             $this->tree->folders[0] = array ('id' => 0, 'childof' => null, 'name' => $GLOBALS['settings']['root_folder_name']);
 
             global $username, $mysql;

@@ -13,7 +13,7 @@ $post_childof       = set_post_childof();
 $post_public        = set_post_bool_var("public", false);
 
 require_once(ABSOLUTE_PATH . "folders.php");
-$tree = new folder();
+$tree = new Folder();
 $query_string = "?expand=" . implode(",", $tree->get_path_to_root($post_childof)) . "&amp;folderid=" . $post_childof;
 
 global $dbh;

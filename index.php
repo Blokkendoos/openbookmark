@@ -226,7 +226,7 @@ $order = set_get_order();
 
                 <?php
                 require_once(ABSOLUTE_PATH . "folders.php");
-                $tree = new folder();
+                $tree = new Folder();
                 $tree->make_tree(0);
                 $tree->print_tree();
                 ?>

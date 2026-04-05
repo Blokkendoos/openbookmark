@@ -54,7 +54,7 @@ if ($folderid == "" || $folderid == "0") {
     if ($mysql->query($query)) {
         if ($inherit) {
             require_once(ABSOLUTE_PATH . "folders.php");
-            $tree = new folder();
+            $tree = new Folder();
             $tree->get_children($folderid);
             if (count($tree->get_children) > 0) {
                 $sub_folders = implode(",", $tree->get_children);

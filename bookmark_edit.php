@@ -104,7 +104,7 @@ if (count($bmlist) > 1) {
         } else {
             $row = mysqli_fetch_object($mysql->result);
             include_once ABSOLUTE_PATH . "folders.php";
-            $tree = new folder();
+            $tree = new Folder();
             $query_string = "?expand=" . implode(",", $tree->get_path_to_root($row->childof)) . "&amp;folderid=" . $row->childof;
             $path = $tree->print_path($row->childof);
             if ($post_icon && $settings['show_bookmark_icon']) {

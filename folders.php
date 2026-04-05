@@ -4,7 +4,7 @@ if (basename($_SERVER['SCRIPT_NAME']) == basename(__FILE__)) {
     die("no direct access allowed");
 }
 
-class folder
+class Folder
 {
 
     function __construct($user = false)
