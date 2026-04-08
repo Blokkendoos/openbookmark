@@ -16,6 +16,7 @@ if (basename($_SERVER['SCRIPT_NAME']) == basename(__FILE__)) {
     die('no direct access allowed');
 }
 
+    return $html;
 
 /**
  PHP Grab favicon
@@ -292,6 +293,7 @@ class favicon
      */
     function load_alt($url, $agent)
     {
+        $content = '';
         // use curl or file_get_contents (both with user_agent) and fopen/fread as fallback
         $context = array('http' => 
                          array('user_agent' => $agent,
@@ -299,14 +301,17 @@ class favicon
                          );
         $context = stream_context_create($context);
         if (function_exists('file_get_contents')) {
-            $content = file_get_contents($url, null, $context);
-        } else {
-            $fh = fopen($url, 'r', false, $context);
-            $content = '';
-            while (!feof($fh)) {
-                $content .= fread($fh, 128); // because filesize() will not work on URLS?
+            if (file_get_contents($url, null, $context)) {
+                $content = file_get_contents($url, null, $context);
             }
-            fclose($fh);
+        } else {
+            if (fopen($url, 'r', false, $context)) {
+                $fh = fopen($url, 'r', false, $context);
+                while (!feof($fh)) {
+                    $content .= fread($fh, 128); // because filesize() will not work on URLS?
+                }
+                fclose($fh);
+            }
         }
         return $content;
     }
