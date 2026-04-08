@@ -162,18 +162,10 @@ class favicon
     function get_favicon_api($domain)
     {
         // Select API at random
-        $random = rand(1, 3);
-
-        // Faviconkit
-        if ($random == 1) {
-            if ($this->debug) {
-                error_log('FaviconKit');
-            }
-            $this->favicon_url = 'https://api.faviconkit.com/' . $domain . '/16';
-        }
+        $random = rand(1, 2);
 
         // Favicongrabber
-        if ($random == 2) {
+        if ($random == 1) {
             if ($this->debug) {
                 error_log('FaviconGrabber');
             }
@@ -182,8 +174,9 @@ class favicon
             $this->favicon_url = @$echo['icons']['0']['src'];
         }
 
-        // Google (check also md5() later)
-        if ($random == 3) {
+        // Google
+        // TODO check md5()
+        if ($random == 2) {
             if ($this->debug) {
                 error_log('Google');
             }
